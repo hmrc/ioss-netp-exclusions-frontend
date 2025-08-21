@@ -48,6 +48,44 @@ signedOut.guidance = We did not save your answers.
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
-
 cannotUseNotAnIntermediary.title = You cannot use this service
 cannotUseNotAnIntermediary.heading = You cannot use this service
+
+stopSellingGoods.title = Has your client’'s business stopped making eligible sales to customers in the EU or Northern Ireland?
+stopSellingGoods.heading =Has your client’'s business stopped making eligible sales to customers in the EU or Northern Ireland?
+stopSellingGoods.checkYourAnswersLabel = Stopped making eligible sales
+stopSellingGoods.error.required = Select yes if your client’'s business stopped making eligible sales
+stopSellingGoods.change.hidden = if your client’'s business stopped making eligible sales
+
+stoppedSellingGoodsDate.title = When did or when will their business stop making eligible sales?
+stoppedSellingGoodsDate.heading = When did or when will their business stop making eligible sales?
+stoppedSellingGoodsDate.checkYourAnswersLabel = Date they stopped sales
+stoppedSellingGoodsDate.hint = You can enter a date up to the last day of this month.</br> For example, {0}.
+stoppedSellingGoodsDate.error.required.all = Enter the date your client stopped selling goods
+stoppedSellingGoodsDate.error.required.two = The date your client stopped selling goods must include {0} and {1}
+stoppedSellingGoodsDate.error.required = The date your client stopped selling goods must include the {0}
+stoppedSellingGoodsDate.error.invalid = Give a correct date
+stoppedSellingGoodsDate.error.invalidDateRage = The date must be between {0} and {1} inclusively
+stoppedSellingGoodsDate.change.hidden = stopped trading goods date
+
+leaveScheme.title = leaveScheme
+leaveScheme.heading = leaveScheme
+leaveScheme.checkYourAnswersLabel = leaveScheme
+leaveScheme.error.required = Select yes if leaveScheme
+leaveScheme.change.hidden = LeaveScheme
+
+stoppedUsingServiceDate.title = StoppedUsingServiceDate
+stoppedUsingServiceDate.heading = StoppedUsingServiceDate
+stoppedUsingServiceDate.checkYourAnswersLabel = StoppedUsingServiceDate
+stoppedUsingServiceDate.error.nonNumeric = Enter your stoppedUsingServiceDate using numbers
+stoppedUsingServiceDate.error.required = Enter your stoppedUsingServiceDate
+stoppedUsingServiceDate.error.wholeNumber = Enter your stoppedUsingServiceDate using whole numbers
+stoppedUsingServiceDate.error.outOfRange = StoppedUsingServiceDate must be between {0} and {1}
+stoppedUsingServiceDate.change.hidden = StoppedUsingServiceDate
+
+applicationComplete.title = applicationComplete
+applicationComplete.heading = applicationComplete
+applicationComplete.checkYourAnswersLabel = applicationComplete
+applicationComplete.error.required = Enter applicationComplete
+applicationComplete.error.length = ApplicationComplete must be 100 characters or less
+applicationComplete.change.hidden = ApplicationComplete

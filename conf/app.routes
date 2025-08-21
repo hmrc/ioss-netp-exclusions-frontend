@@ -21,3 +21,20 @@ GET         /account/signed-out                          controllers.auth.Signed
 GET         /unauthorised                                controllers.UnauthorisedController.onPageLoad()
 
 GET         /cannot-use-this-service                     controllers.CannotUseNotAnIntermediaryController.onPageLoad()
+
+GET        /exclusions-stopped-selling-goods             controllers.StopSellingGoodsController.onPageLoad(mode: Mode = NormalMode)
+POST       /exclusions-stopped-selling-goods             controllers.StopSellingGoodsController.onSubmit(mode: Mode = NormalMode)
+
+GET        /exclusions-stopped-selling-goods-date        controllers.StoppedSellingGoodsDateController.onPageLoad(mode: Mode = NormalMode)
+POST       /exclusions-stopped-selling-goods-date        controllers.StoppedSellingGoodsDateController.onSubmit(mode: Mode = NormalMode)
+
+GET        /exclusions-leave-scheme                      controllers.LeaveSchemeController.onPageLoad(mode: Mode = NormalMode)
+POST       /exclusions-leave-scheme                      controllers.LeaveSchemeController.onSubmit(mode: Mode = NormalMode)
+
+
+GET        /exclusions-stopped-using-service-date        controllers.StoppedUsingServiceDateController.onPageLoad(mode: Mode = NormalMode)
+POST       /exclusions-stopped-using-service-date        controllers.StoppedUsingServiceDateController.onSubmit(mode: Mode = NormalMode)
+
+
+GET        /client-exclusions-request-received           controllers.ApplicationCompleteController.onPageLoad(mode: Mode = NormalMode)
+POST       /client-exclusions-request-received           controllers.ApplicationCompleteController.onSubmit(mode: Mode = NormalMode)
