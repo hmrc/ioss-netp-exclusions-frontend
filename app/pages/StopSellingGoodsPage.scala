@@ -16,7 +16,10 @@
 
 package pages
 
+import controllers.routes
+import models.UserAnswers
 import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
 case object StopSellingGoodsPage extends QuestionPage[Boolean] {
 
@@ -30,6 +33,6 @@ case object StopSellingGoodsPage extends QuestionPage[Boolean] {
   override def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
       case true => StoppedSellingGoodsDatePage
-      case false => JourneyRecoveryPage //todo LeaveSchemePage
+      case false => LeaveSchemePage
     }.orRecover
 }

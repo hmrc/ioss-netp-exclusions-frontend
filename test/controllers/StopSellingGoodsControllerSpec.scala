@@ -1,28 +1,38 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package controllers
 
 import base.SpecBase
 import forms.StopSellingGoodsFormProvider
-import models.{NormalMode, UserAnswers}
-import navigation.{FakeNavigator, Navigator}
-import org.mockito.ArgumentMatchers.any
-import org.mockito.Mockito.when
+import models.UserAnswers
 import org.scalatestplus.mockito.MockitoSugar
 import pages.StopSellingGoodsPage
-import play.api.inject.bind
-import play.api.mvc.Call
+import play.api.data.Form
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
-import repositories.SessionRepository
+import play.api.test.Helpers.*
 import views.html.StopSellingGoodsView
 
-import scala.concurrent.Future
 
 class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
 
   val formProvider = new StopSellingGoodsFormProvider()
-  val form = formProvider()
+  val form: Form[Boolean] = formProvider()
 
-  lazy val stopSellingGoodsRoute = routes.StopSellingGoodsController.onPageLoad(waypoints).url
+  lazy val stopSellingGoodsRoute: String = routes.StopSellingGoodsController.onPageLoad(waypoints).url
 
   "StopSellingGoods Controller" - {
 
@@ -62,15 +72,8 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
 
     "must redirect to the next page when valid data is submitted" in {
 
-      val mockSessionRepository = mock[SessionRepository]
-
-      when(mockSessionRepository.set(any())) thenReturn Future.successful(true)
-
       val application =
         applicationBuilder(userAnswers = Some(emptyUserAnswers))
-          .overrides(
-            bind[SessionRepository].toInstance(mockSessionRepository)
-          )
           .build()
 
       running(application) {
@@ -79,9 +82,10 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
             .withFormUrlEncodedBody(("value", "true"))
 
         val result = route(application, request).value
+        val userAnswers = UserAnswers(userAnswersId).set(StopSellingGoodsPage, true).success.value
 
         status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual onwardRoute.url
+        redirectLocation(result).value mustEqual StopSellingGoodsPage.navigate(waypoints, emptyUserAnswers, userAnswers).url
       }
     }
 
@@ -101,11 +105,11 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, NormalMode)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints)(request, messages(application)).toString
       }
     }
 
-    "must redirect to Journey Recovery for a GET if no existing data is found" in {
+    "must return OK with default data if no existing data is found" in {
 
       val application = applicationBuilder(userAnswers = None).build()
 
@@ -114,24 +118,10 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
 
         val result = route(application, request).value
 
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
-      }
-    }
+        val view = application.injector.instanceOf[StopSellingGoodsView]
 
-    "must redirect to Journey Recovery for a POST if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request =
-          FakeRequest(POST, stopSellingGoodsRoute)
-            .withFormUrlEncodedBody(("value", "true"))
-
-        val result = route(application, request).value
-
-        status(result) mustEqual SEE_OTHER
-        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
+        status(result) mustEqual OK
+        contentAsString(result) mustEqual view(form, waypoints)(request, messages(application)).toString
       }
     }
   }

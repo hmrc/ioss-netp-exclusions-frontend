@@ -16,12 +16,13 @@
 
 package controllers
 
-import controllers.actions._
+import controllers.actions.*
 import forms.StopSellingGoodsFormProvider
+import models.UserAnswers
+
 import javax.inject.Inject
-import models.Mode
-import navigation.Navigator
-import pages.StopSellingGoodsPage
+import pages.{StopSellingGoodsPage, Waypoints}
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import repositories.SessionRepository
@@ -35,18 +36,17 @@ class StopSellingGoodsController @Inject()(
                                          sessionRepository: SessionRepository,
                                          identify: IdentifierAction,
                                          getData: DataRetrievalAction,
-                                         requireData: DataRequiredAction,
                                          formProvider: StopSellingGoodsFormProvider,
                                          val controllerComponents: MessagesControllerComponents,
                                          view: StopSellingGoodsView
                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  val form = formProvider()
+  val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = (identify andThen getData andThen requireData) {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = (identify andThen getData) {
     implicit request =>
 
-      val preparedForm = request.userAnswers.get(StopSellingGoodsPage) match {
+      val preparedForm = request.userAnswers.getOrElse(UserAnswers(request.userId)).get(StopSellingGoodsPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -54,7 +54,7 @@ class StopSellingGoodsController @Inject()(
       Ok(view(preparedForm, waypoints))
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = (identify andThen getData).async {
     implicit request =>
 
       form.bindFromRequest().fold(
@@ -62,10 +62,11 @@ class StopSellingGoodsController @Inject()(
           Future.successful(BadRequest(view(formWithErrors, waypoints))),
 
         value =>
+          val originalAnswers: UserAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
           for {
-            updatedAnswers <- Future.fromTry(request.userAnswers.set(StopSellingGoodsPage, value))
+            updatedAnswers <- Future.fromTry(originalAnswers.set(StopSellingGoodsPage, value))
             _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(StopSellingGoodsPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
+          } yield Redirect(StopSellingGoodsPage.navigate(waypoints, originalAnswers, updatedAnswers).route)
       )
   }
 }

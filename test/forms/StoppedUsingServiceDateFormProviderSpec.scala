@@ -1,46 +1,45 @@
+/*
+ * Copyright 2025 HM Revenue & Customs
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package forms
 
-import forms.behaviours.IntFieldBehaviours
-import play.api.data.FormError
+import forms.behaviours.DateBehaviours
+import play.api.i18n.Messages
+import play.api.test.Helpers.stubMessages
 
-class StoppedUsingServiceDateFormProviderSpec extends IntFieldBehaviours {
+import java.time.LocalDate
 
-  val form = new StoppedUsingServiceDateFormProvider()()
+class StoppedUsingServiceDateFormProviderSpec extends DateBehaviours {
+
+  private implicit val messages: Messages = stubMessages()
 
   ".value" - {
 
-    val fieldName = "value"
+    val commencementDate = LocalDate.parse("2013-12-03")
+    val currentDate = LocalDate.parse("2013-12-01")
+    val endOfPeriod = LocalDate.parse("2013-12-31")
 
-    val minimum = 0
-    val maximum = Int.MaxValue
+    val form = new StoppedUsingServiceDateFormProvider()(currentDate, commencementDate)
 
-    val validDataGenerator = intsInRangeWithCommas(minimum, maximum)
-
-    behave like fieldThatBindsValidData(
-      form,
-      fieldName,
-      validDataGenerator
+    val validData = datesBetween(
+      min = commencementDate,
+      max = endOfPeriod
     )
 
-    behave like intField(
-      form,
-      fieldName,
-      nonNumericError  = FormError(fieldName, "stoppedUsingServiceDate.error.nonNumeric"),
-      wholeNumberError = FormError(fieldName, "stoppedUsingServiceDate.error.wholeNumber")
-    )
-
-    behave like intFieldWithRange(
-      form,
-      fieldName,
-      minimum       = minimum,
-      maximum       = maximum,
-      expectedError = FormError(fieldName, "stoppedUsingServiceDate.error.outOfRange", Seq(minimum, maximum))
-    )
-
-    behave like mandatoryField(
-      form,
-      fieldName,
-      requiredError = FormError(fieldName, "stoppedUsingServiceDate.error.required")
-    )
+    behave like dateField(form, "value", validData)
+    behave like mandatoryDateField(form, "value", "stoppedUsingServiceDate.error.required.all")
   }
 }

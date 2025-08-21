@@ -16,18 +16,17 @@
 
 package viewmodels.checkAnswers
 
-import controllers.routes
-import models.{CheckMode, UserAnswers}
-import pages.StopSellingGoodsPage
+import models.UserAnswers
+import pages.{CheckAnswersPage, StopSellingGoodsPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object StopSellingGoodsSummary  {
 
   def row(
-           answers: UserAnswers, 
+           answers: UserAnswers,
            waypoints: Waypoints,
            sourcePage: CheckAnswersPage
          )(implicit messages: Messages): Option[SummaryListRow] =

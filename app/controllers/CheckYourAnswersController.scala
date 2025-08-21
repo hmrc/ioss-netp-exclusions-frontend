@@ -17,17 +17,21 @@
 package controllers
 
 import com.google.inject.Inject
+import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
+import pages.{CheckYourAnswersPage, EmptyWaypoints, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import viewmodels.govuk.summarylist.*
 import views.html.CheckYourAnswersView
+import utils.FutureSyntax.FutureOps
 
 class CheckYourAnswersController @Inject()(
                                             override val messagesApi: MessagesApi,
                                             cc: AuthenticatedControllerComponents,
-                                            view: CheckYourAnswersView
+                                            view: CheckYourAnswersView,
+                                            config: FrontendAppConfig
                                           ) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
@@ -35,10 +39,18 @@ class CheckYourAnswersController @Inject()(
   def onPageLoad(): Action[AnyContent] = cc.identifyAndGetData {
     implicit request =>
 
+      val clientName = "There is no Try Ltd"
+      val waypoints = EmptyWaypoints
       val list = SummaryListViewModel(
         rows = Seq.empty
       )
 
-      Ok(view(list))
+      Ok(view(waypoints, list, config.iossYourAccountUrl, clientName))
+  }
+
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetData.async {
+    implicit request =>
+      Redirect(CheckYourAnswersPage.navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
+
   }
 }

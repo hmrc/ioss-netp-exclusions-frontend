@@ -16,15 +16,20 @@
 
 package pages
 
+import controllers.routes
+import models.UserAnswers
 import play.api.libs.json.JsPath
+import play.api.mvc.Call
 
-case object StoppedSellingGoodsDatePage extends QuestionPage[Int] {
+import java.time.LocalDate
+
+case object StoppedSellingGoodsDatePage extends QuestionPage[LocalDate] {
 
   override def path: JsPath = JsPath \ toString
 
   override def toString: String = "stoppedSellingGoodsDate"
 
-  override def route(waypoints: Waypoints): Call = routes.StoppedSellingGoodsDateController.onPageLoad(mode)
+  override def route(waypoints: Waypoints): Call = routes.StoppedSellingGoodsDateController.onPageLoad(waypoints)
 
   override def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     CheckYourAnswersPage

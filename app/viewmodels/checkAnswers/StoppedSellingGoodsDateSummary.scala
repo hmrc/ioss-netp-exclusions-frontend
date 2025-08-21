@@ -16,13 +16,13 @@
 
 package viewmodels.checkAnswers
 
-import controllers.routes
-import models.{CheckMode, UserAnswers}
-import pages.StoppedSellingGoodsDatePage
+import date.Dates
+import models.UserAnswers
+import pages.{CheckAnswersPage, StoppedSellingGoodsDatePage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
-import viewmodels.govuk.summarylist._
-import viewmodels.implicits._
+import viewmodels.govuk.summarylist.*
+import viewmodels.implicits.*
 
 object StoppedSellingGoodsDateSummary  {
 
@@ -35,13 +35,13 @@ object StoppedSellingGoodsDateSummary  {
     answers.get(StoppedSellingGoodsDatePage).map {
       answer =>
 
-        val value = dates.formatter.format(sellingGoodsDate)
+        val value = dates.formatter.format(answer)
 
         val stopSellingGoodsPageChangeUrl = StoppedSellingGoodsDatePage.changeLink(waypoints, sourcePage).url
         
         SummaryListRowViewModel(
           key     = "stoppedSellingGoodsDate.checkYourAnswersLabel",
-          value   = ValueViewModel(answer.toString),
+          value   = ValueViewModel(value),
           actions = Seq(
             ActionItemViewModel("site.change", stopSellingGoodsPageChangeUrl)
               .withVisuallyHiddenText(messages("stoppedSellingGoodsDate.change.hidden"))
