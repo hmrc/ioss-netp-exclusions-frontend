@@ -2,11 +2,7 @@
 
 ->          /hmrc-frontend                               hmrcfrontend.Routes
 
-GET         /                                            controllers.IndexController.onPageLoad()
-
 GET         /assets/*file                                controllers.Assets.versioned(path="/public", file: Asset)
-
-GET         /language/:lang                              controllers.LanguageSwitchController.switchToLanguage(lang: String)
 
 GET         /refresh-session                             controllers.KeepAliveController.keepAlive()
 
@@ -23,16 +19,18 @@ GET         /unauthorised                                controllers.Unauthorise
 
 GET         /cannot-use-this-service                     controllers.CannotUseNotAnIntermediaryController.onPageLoad()
 
-GET         /exclusions-stopped-selling-goods             controllers.StopSellingGoodsController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /exclusions-stopped-selling-goods             controllers.StopSellingGoodsController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /start-journey/:iossNumber                   controllers.StartJourneyController.onPageLoad(iossNumber: String)
 
-GET         /exclusions-stopped-selling-goods-date        controllers.StoppedSellingGoodsDateController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /exclusions-stopped-selling-goods-date        controllers.StoppedSellingGoodsDateController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /exclusions-stopped-selling-goods            controllers.StopSellingGoodsController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /exclusions-stopped-selling-goods            controllers.StopSellingGoodsController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
-GET         /exclusions-leave-scheme                      controllers.LeaveSchemeController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /exclusions-leave-scheme                      controllers.LeaveSchemeController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /exclusions-stopped-selling-goods-date       controllers.StoppedSellingGoodsDateController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /exclusions-stopped-selling-goods-date       controllers.StoppedSellingGoodsDateController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
-GET         /exclusions-stopped-using-service-date        controllers.StoppedUsingServiceDateController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
-POST        /exclusions-stopped-using-service-date        controllers.StoppedUsingServiceDateController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+GET         /exclusions-leave-scheme                     controllers.LeaveSchemeController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /exclusions-leave-scheme                     controllers.LeaveSchemeController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
-GET         /client-exclusions-request-received           controllers.ApplicationCompleteController.onPageLoad()
+GET         /exclusions-stopped-using-service-date       controllers.StoppedUsingServiceDateController.onPageLoad(waypoints: Waypoints ?= EmptyWaypoints)
+POST        /exclusions-stopped-using-service-date       controllers.StoppedUsingServiceDateController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
+
+GET         /client-exclusions-request-received          controllers.ApplicationCompleteController.onPageLoad()

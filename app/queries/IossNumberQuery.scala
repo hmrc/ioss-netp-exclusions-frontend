@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
-package controllers
+package queries
 
-import javax.inject.Inject
-import play.api.i18n.I18nSupport
-import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import play.api.libs.json.JsPath
 
-class IndexController @Inject()(
-                                 val controllerComponents: MessagesControllerComponents,
-                               ) extends FrontendBaseController with I18nSupport {
-
-  def onPageLoad(): Action[AnyContent] = Action { _ =>
-    Redirect(routes.StopSellingGoodsController.onPageLoad())
-  }
+case object IossNumberQuery extends Gettable[String] with Settable[String] {
+  override def path: JsPath = JsPath \ "iossNumber"
 }

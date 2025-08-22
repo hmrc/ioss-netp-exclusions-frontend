@@ -18,24 +18,25 @@ package controllers
 
 import base.SpecBase
 import play.api.test.FakeRequest
-import play.api.test.Helpers._
+import play.api.test.Helpers.*
 
-class IndexControllerSpec extends SpecBase {
+class StartJourneyControllerSpec extends SpecBase {
 
-  "Index Controller" - {
+  "Start Journey Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = None).build()
+      val iossNumber = "IM9001234567"
 
       running(application) {
-        val request = FakeRequest(GET, routes.IndexController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.StartJourneyController.onPageLoad(iossNumber).url)
 
         val result = route(application, request).value
 
         status(result) mustEqual SEE_OTHER
 
-        redirectLocation(result).value mustBe routes.StopSellingGoodsController.onPageLoad().url
+        redirectLocation(result).value mustBe routes.StopSellingGoodsController.onPageLoad(waypoints).url
       }
     }
   }
