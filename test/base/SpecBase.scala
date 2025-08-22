@@ -44,6 +44,7 @@ trait SpecBase
   val vrn: Vrn = Vrn("123456789")
   val intermediaryNumber = "IN9001234567"
   val waypoints: Waypoints = EmptyWaypoints
+  val clientName = "There is no Try Ltd"
 
   lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest("", "/endpoint").withCSRFToken.asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
