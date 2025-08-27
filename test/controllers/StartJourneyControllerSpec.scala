@@ -14,32 +14,29 @@
  * limitations under the License.
  */
 
-package controllers.auth
+package controllers
 
 import base.SpecBase
-import config.FrontendAppConfig
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
-import views.html.auth.SignedOutView
 
-class SignedOutControllerSpec extends SpecBase {
+class StartJourneyControllerSpec extends SpecBase {
 
-  "SignedOut Controller" - {
+  "Start Journey Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
       val application = applicationBuilder(userAnswers = None).build()
+      val iossNumber = "IM9001234567"
 
       running(application) {
-        val request = FakeRequest(GET, routes.SignedOutController.onPageLoad().url)
+        val request = FakeRequest(GET, routes.StartJourneyController.onPageLoad(iossNumber).url)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[SignedOutView]
-        val appConfig = application.injector.instanceOf[FrontendAppConfig]
+        status(result) mustEqual SEE_OTHER
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(appConfig.iossYourAccountUrl)(request, messages(application)).toString
+        redirectLocation(result).value mustBe routes.StopSellingGoodsController.onPageLoad(waypoints).url
       }
     }
   }

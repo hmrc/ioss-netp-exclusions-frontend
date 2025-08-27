@@ -14,28 +14,11 @@
  * limitations under the License.
  *@
 
-@this(
-    layout: templates.Layout,
-    govukButton: GovukButton
-)
-
-@(accountUrl: String)(implicit request: Request[_], messages: Messages)
-
-@layout(
-    pageTitle    = titleNoForm(messages("signedOut.title")),
-    showBackLink = false,
-    timeout      = false,
-    showSignOut  = false
-) {
-
-    <h1 class="govuk-heading-xl">@messages("signedOut.heading")</h1>
-
-    <p class="govuk-body">@messages("signedOut.guidance")</p>
-
-    <p class="govuk-body">
-        @govukButton(
-            ButtonViewModel(messages("site.signIn"))
-                .asLink(accountUrl)
-        )
-    </p>
-}
+@import uk.gov.hmrc.play.bootstrap.binders.RedirectUrl
+@this(govukButton: GovukButton)
+@(continueMessage: String, continueUrl: String, waypoints: Waypoints)(implicit messages: Messages)
+<div class="govuk-button-group">
+    @govukButton(
+        ButtonViewModel(messages(continueMessage)).withAttribute(("id", "continue"))
+    )
+</div>

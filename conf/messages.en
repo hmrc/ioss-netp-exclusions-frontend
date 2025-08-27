@@ -1,4 +1,4 @@
-service.name = ioss-netp-exclusions-frontend
+service.name = Manage your clients’ Import One Stop Shop VAT
 
 site.back = Back
 site.remove = Remove
@@ -10,6 +10,8 @@ site.start = Start now
 site.startAgain = Start again
 site.signIn = Sign in
 site.govuk = GOV.UK
+site.confirm = Confirm
+site.cancel = Cancel
 
 date.day = Day
 date.month = Month
@@ -31,8 +33,9 @@ index.title = ioss-netp-exclusions-frontend
 index.heading = ioss-netp-exclusions-frontend
 index.guidance = Welcome to your new frontend. Please see the README file for a guide to getting started.
 
-checkYourAnswers.title = Check your answers
-checkYourAnswers.heading = Check your answers
+checkYourAnswers.title = Check your answers for {0} leaving the IOSS scheme
+checkYourAnswers.heading = Check your answers for {0} leaving the IOSS scheme
+checkYourAnswers.hint = I confirm my client wants to leave the IOSS scheme.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service
@@ -48,6 +51,49 @@ signedOut.guidance = We did not save your answers.
 unauthorised.title = You can’t access this service with this account
 unauthorised.heading = You can’t access this service with this account
 
-
 cannotUseNotAnIntermediary.title = You cannot use this service
 cannotUseNotAnIntermediary.heading = You cannot use this service
+
+stopSellingGoods.title = Has your client’'s business stopped making eligible sales to customers in the EU or Northern Ireland?
+stopSellingGoods.heading =Has your client’'s business stopped making eligible sales to customers in the EU or Northern Ireland?
+stopSellingGoods.checkYourAnswersLabel = Stopped making eligible sales
+stopSellingGoods.error.required = Select yes if your client’'s business stopped making eligible sales
+stopSellingGoods.change.hidden = if your client’'s business stopped making eligible sales
+
+stoppedSellingGoodsDate.title = When did or when will their business stop making eligible sales?
+stoppedSellingGoodsDate.heading = When did or when will their business stop making eligible sales?
+stoppedSellingGoodsDate.checkYourAnswersLabel = Date they stopped sales
+stoppedSellingGoodsDate.hint = You can enter a date up to the last day of this month.</br> For example, {0}.
+stoppedSellingGoodsDate.error.required.all = Enter the date your client stopped selling goods
+stoppedSellingGoodsDate.error.required.two = The date your client stopped selling goods must include {0} and {1}
+stoppedSellingGoodsDate.error.required = The date your client stopped selling goods must include the {0}
+stoppedSellingGoodsDate.error.invalid = Give a correct date
+stoppedSellingGoodsDate.error.invalidDateRage = The date must be between {0} and {1} inclusively
+stoppedSellingGoodsDate.change.hidden = stopped trading goods date
+
+leaveScheme.title = Are you sure they want to leave the Import One Stop Shop scheme?
+leaveScheme.heading = Are you sure they want to leave the Import One Stop Shop scheme?
+leaveScheme.error.required = Select yes if you are sure they want to leave
+leaveScheme.change.hidden = if you are sure they want to leave
+
+stoppedUsingServiceDate.title = When did or when will their business stop using this service?
+stoppedUsingServiceDate.heading = When did or when will their business stop using this service?
+stoppedUsingServiceDate.checkYourAnswersLabel = Leaving date
+stoppedUsingServiceDate.hint = You can enter a date up to the last day of this month.</br> For example, {0}
+stoppedUsingServiceDate.error.required.all = Enter the date your client stopped using this service
+stoppedUsingServiceDate.error.required.two = The date your client stopped using this service must include {0} and {1}
+stoppedUsingServiceDate.error.required = The date your client stopped using this service must include {0}
+stoppedUsingServiceDate.error.invalid = Give a correct date
+stoppedUsingServiceDate.error.invalidDateRage = The date must be between {0} and {1} inclusively
+stoppedUsingServiceDate.change.hidden = leaving date
+
+applicationComplete.title = We have removed {0} from the IOSS service
+applicationComplete.heading = We have removed {0} from the IOSS service
+applicationComplete.sentMessage = We have sent them a message to let them know.
+applicationComplete.next.heading = What happens next
+applicationComplete.next.info.top = You must:
+applicationComplete.next.info.bullet0 = complete any outstanding VAT returns for {0}
+applicationComplete.next.info.bullet1 = complete their final VAT return
+applicationComplete.next.info.bullet2 = pay any VAT you still owe on their account
+applicationComplete.next.info.bottom.p1= If you wish to cancel this, you must contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a> by <strong>{0}</strong>
+applicationComplete.next.info.returnToAccount = Return to your account
