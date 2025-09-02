@@ -18,32 +18,171 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
-import org.scalatestplus.mockito.MockitoSugar
+import date.Today
+import org.mockito.Mockito.when
+import pages.{LeaveSchemePage, StopSellingGoodsPage, StoppedSellingGoodsDatePage, StoppedUsingServiceDatePage}
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.ApplicationCompleteView
 
+import java.time.LocalDate
 
-class ApplicationCompleteControllerSpec extends SpecBase with MockitoSugar {
+
+class ApplicationCompleteControllerSpec extends SpecBase {
+
+  val today: LocalDate = LocalDate.of(2024, 1, 25)
+  val mockToday: Today = mock[Today]
+  when(mockToday.date).thenReturn(today)
 
   "ApplicationComplete Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "when someone stops selling goods" - {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      "must return OK with the leave date being end of the month (31st Jan) " +
+        "when stopping at least 15 days prior to the end of the month (16th Jan)" in {
+
+        val stoppedSellingGoodsDate = LocalDate.of(2024, 1, 16)
+
+        val userAnswers = emptyUserAnswers
+          .set(StopSellingGoodsPage, true).success.get
+          .set(StoppedSellingGoodsDatePage, stoppedSellingGoodsDate).success.get
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(bind[Today].toInstance(mockToday))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.ApplicationCompleteController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[ApplicationCompleteView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+          val maxChangeDate = "31 January 2024"
+
+          contentAsString(result) mustEqual view(
+            config.iossYourAccountUrl,
+            clientName,
+            maxChangeDate
+          )(request, messages(application)).toString
+        }
+      }
+
+      "must return OK with the leave date being end of the month (31st Jan) " +
+        "when stopping after today (26th Jan)" in {
+
+        val stoppedSellingGoodsDate = LocalDate.of(2024, 1, 26)
+
+        val userAnswers = emptyUserAnswers
+          .set(StopSellingGoodsPage, true).success.get
+          .set(StoppedSellingGoodsDatePage, stoppedSellingGoodsDate).success.get
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(bind[Today].toInstance(mockToday))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.ApplicationCompleteController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[ApplicationCompleteView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+          val maxChangeDate = "31 January 2024"
+
+          contentAsString(result) mustEqual view(
+            config.iossYourAccountUrl,
+            clientName,
+            maxChangeDate
+          )(request, messages(application)).toString
+        }
+      }
+    }
+
+    "when someone stops using the service" - {
+
+      "must return OK with the leave date being 1st day of next month (1st Feb) " +
+        "when stopping at least 15 days prior to the end of the month (16th Jan)" in {
+
+        val stoppedUsingServiceDate = LocalDate.of(2024, 1, 16)
+
+        val userAnswers = emptyUserAnswers
+          .set(StopSellingGoodsPage, false).success.get
+          .set(LeaveSchemePage, true).success.get
+          .set(StoppedUsingServiceDatePage, stoppedUsingServiceDate).success.get
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(bind[Today].toInstance(mockToday))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.ApplicationCompleteController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[ApplicationCompleteView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+          val maxChangeDate = "31 January 2024"
+          contentAsString(result) mustEqual view(config.iossYourAccountUrl, clientName, maxChangeDate)(request, messages(application)).toString
+        }
+      }
+
+      "must return OK with the leave date being 1st day of the following month (1st March) " +
+        "when stopping less than 15 days prior to the end of the month (17th Jan)" in {
+
+        val stoppedUsingServiceDate = LocalDate.of(2024, 1, 17)
+
+        val userAnswers = emptyUserAnswers
+          .set(StopSellingGoodsPage, false).success.get
+          .set(LeaveSchemePage, true).success.get
+          .set(StoppedUsingServiceDatePage, stoppedUsingServiceDate).success.get
+
+        val application = applicationBuilder(userAnswers = Some(userAnswers))
+          .overrides(bind[Today].toInstance(mockToday))
+          .build()
+
+        running(application) {
+          val request = FakeRequest(GET, routes.ApplicationCompleteController.onPageLoad().url)
+
+          val result = route(application, request).value
+
+          val view = application.injector.instanceOf[ApplicationCompleteView]
+
+          val config = application.injector.instanceOf[FrontendAppConfig]
+
+          status(result) mustEqual OK
+          val maxChangeDate = "29 February 2024"
+          contentAsString(result) mustEqual view(config.iossYourAccountUrl, clientName, maxChangeDate)(request, messages(application)).toString
+        }
+      }
+    }
+
+    "must redirect to JourneyRecoveryController when data is missing" in {
+
+      val userAnswers = emptyUserAnswers
+
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.ApplicationCompleteController.onPageLoad().url)
 
         val result = route(application, request).value
 
-        val view = application.injector.instanceOf[ApplicationCompleteView]
-
-        val config = application.injector.instanceOf[FrontendAppConfig]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(config.iossYourAccountUrl, clientName)(request, messages(application)).toString
+        status(result) mustEqual SEE_OTHER
+        redirectLocation(result).value mustEqual routes.JourneyRecoveryController.onPageLoad().url
       }
     }
   }
 }
+

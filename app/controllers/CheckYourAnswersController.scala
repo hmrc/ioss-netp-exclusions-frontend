@@ -19,20 +19,26 @@ package controllers
 import com.google.inject.Inject
 import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
-import pages.{CheckYourAnswersPage, EmptyWaypoints, Waypoints}
+import date.Dates
+import logging.Logging
+import models.CheckMode
+import pages.{CheckYourAnswersPage, EmptyWaypoints, Waypoint, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.CompletionChecks
 import viewmodels.govuk.summarylist.*
 import views.html.CheckYourAnswersView
 import utils.FutureSyntax.FutureOps
+import viewmodels.checkAnswers.{StopSellingGoodsSummary, StoppedSellingGoodsDateSummary, StoppedUsingServiceDateSummary}
 
 class CheckYourAnswersController @Inject()(
                                             override val messagesApi: MessagesApi,
                                             cc: AuthenticatedControllerComponents,
+                                            dates: Dates,
                                             view: CheckYourAnswersView,
                                             config: FrontendAppConfig
-                                          ) extends FrontendBaseController with I18nSupport {
+                                          ) extends FrontendBaseController with I18nSupport with CompletionChecks with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
@@ -40,17 +46,35 @@ class CheckYourAnswersController @Inject()(
     implicit request =>
 
       val clientName = "There is no Try Ltd"
-      val waypoints = EmptyWaypoints
+      val thisPage = CheckYourAnswersPage
+      val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(thisPage, CheckMode, CheckYourAnswersPage.urlFragment))
+      
+      val stopSellingGoodsSummaryRow = StopSellingGoodsSummary.row(request.userAnswers, waypoints, thisPage)
+      val stoppedSellingGoodsDateRow = StoppedSellingGoodsDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
+      val stoppedUsingServiceDateRow = StoppedUsingServiceDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
+      
       val list = SummaryListViewModel(
-        rows = Seq.empty
+        rows = Seq(
+          stopSellingGoodsSummaryRow,
+          stoppedSellingGoodsDateRow,
+          stoppedUsingServiceDateRow
+        ).flatten
       )
 
-      Ok(view(waypoints, list, config.iossYourAccountUrl, clientName))
+      val isValid = validate()
+      Ok(view(waypoints, list, isValid, config.iossYourAccountUrl, clientName))
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetData.async {
+  def onSubmit(waypoints: Waypoints, incompletePrompt: Boolean): Action[AnyContent] = cc.identifyAndGetData.async {
     implicit request =>
-      Redirect(CheckYourAnswersPage.navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
-
+      getFirstValidationErrorRedirect(waypoints) match {
+        case Some(errorRedirect) => if (incompletePrompt) {
+          errorRedirect.toFuture
+        } else {
+          Redirect(routes.CheckYourAnswersController.onPageLoad()).toFuture
+        }
+        case None =>
+          Redirect(CheckYourAnswersPage.navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
+      }
   }
 }

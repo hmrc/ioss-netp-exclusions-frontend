@@ -22,6 +22,7 @@ import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
 import org.scalatest.{OptionValues, TryValues}
+import org.scalatestplus.mockito.MockitoSugar
 import pages.{EmptyWaypoints, Waypoints}
 import play.api.Application
 import play.api.i18n.{Messages, MessagesApi}
@@ -38,6 +39,7 @@ trait SpecBase
     with TryValues
     with OptionValues
     with ScalaFutures
+    with MockitoSugar
     with IntegrationPatience {
 
   val userAnswersId: String = "id"
