@@ -17,6 +17,7 @@
 package base
 
 import controllers.actions.*
+import generators.Generators
 import models.UserAnswers
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
@@ -40,7 +41,8 @@ trait SpecBase
     with OptionValues
     with ScalaFutures
     with MockitoSugar
-    with IntegrationPatience {
+    with IntegrationPatience
+    with Generators {
 
   val userAnswersId: String = "id"
   val vrn: Vrn = Vrn("123456789")
