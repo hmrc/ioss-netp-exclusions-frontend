@@ -62,7 +62,7 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
-          val maxChangeDate = "31 January 2024"
+          val maxChangeDate = "1 February 2024"
 
           contentAsString(result) mustEqual view(
             config.iossYourAccountUrl,
@@ -95,7 +95,7 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
-          val maxChangeDate = "31 January 2024"
+          val maxChangeDate = "1 February 2024"
 
           contentAsString(result) mustEqual view(
             config.iossYourAccountUrl,
@@ -132,7 +132,7 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
-          val maxChangeDate = "31 January 2024"
+          val maxChangeDate = "1 February 2024"
           contentAsString(result) mustEqual view(config.iossYourAccountUrl, clientName, maxChangeDate)(request, messages(application)).toString
         }
       }
@@ -161,7 +161,7 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
-          val maxChangeDate = "29 February 2024"
+          val maxChangeDate = "1 March 2024"
           contentAsString(result) mustEqual view(config.iossYourAccountUrl, clientName, maxChangeDate)(request, messages(application)).toString
         }
       }
