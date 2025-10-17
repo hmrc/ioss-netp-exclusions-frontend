@@ -445,9 +445,7 @@ trait ModelGenerators {
           otherAddress = Some(otherAddress),
           schemeDetails = schemeDetails,
           exclusions = exclusions,
-          adminUse = adminUse,
-          intermediaryDetails = None,
-          bankDetails = bankDetails
+          adminUse = adminUse
         )
       }
     }

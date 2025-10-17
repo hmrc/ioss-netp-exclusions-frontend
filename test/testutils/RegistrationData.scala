@@ -94,10 +94,8 @@ object RegistrationData extends SpecBase {
     changeLog = etmpAmendRegistrationChangeLog,
     customerIdentification = etmpAmendCustomerIdentification,
     tradingNames = Seq(arbitrary[EtmpTradingName].sample.value),
-    intermediaryDetails = Some(arbitrary[EtmpIntermediaryDetails].sample.value),
     otherAddress = Some(arbitrary[EtmpOtherAddress].sample.value),
     schemeDetails = etmpSchemeDetails,
-    bankDetails = genBankDetails,
     exclusionDetails = None
   )
   

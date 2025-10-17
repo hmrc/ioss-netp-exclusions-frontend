@@ -19,15 +19,15 @@ package models.etmp.amend
 import play.api.libs.json.{Json, OFormat}
 import models.etmp.*
 
-case class EtmpAmendRegistrationRequest(administration: EtmpAdministration,
-                                        changeLog: EtmpAmendRegistrationChangeLog,
-                                        exclusionDetails: Option[EtmpExclusionDetails],
-                                        customerIdentification: EtmpAmendCustomerIdentification,
-                                        tradingNames: Seq[EtmpTradingName],
-                                        intermediaryDetails: Option[EtmpIntermediaryDetails],
-                                        otherAddress: Option[EtmpOtherAddress],
-                                        schemeDetails: EtmpSchemeDetails,
-                                        bankDetails: EtmpBankDetails)
+case class EtmpAmendRegistrationRequest(
+                                         administration: EtmpAdministration,
+                                         changeLog: EtmpAmendRegistrationChangeLog,
+                                         exclusionDetails: Option[EtmpExclusionDetails],
+                                         customerIdentification: EtmpAmendCustomerIdentification,
+                                         tradingNames: Seq[EtmpTradingName],
+                                         otherAddress: Option[EtmpOtherAddress],
+                                         schemeDetails: EtmpSchemeDetails
+                                       )
 
 object EtmpAmendRegistrationRequest {
 

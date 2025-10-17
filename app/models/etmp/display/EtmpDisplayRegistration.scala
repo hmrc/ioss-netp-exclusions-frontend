@@ -23,11 +23,9 @@ case class EtmpDisplayRegistration(
                                     customerIdentification: EtmpDisplayCustomerIdentification,
                                     tradingNames: Seq[EtmpTradingName],
                                     clientDetails: Seq[EtmpClientDetails],
-                                    intermediaryDetails: Option[EtmpIntermediaryDetails],
                                     otherAddress: Option[EtmpOtherAddress],
                                     schemeDetails: EtmpDisplaySchemeDetails,
                                     exclusions: Seq[EtmpExclusion],
-                                    bankDetails: EtmpBankDetails,
                                     adminUse: EtmpAdminUse
                                   )
 

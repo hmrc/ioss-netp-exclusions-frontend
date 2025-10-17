@@ -37,4 +37,7 @@ class RegistrationConnector @Inject()(config: Configuration, httpClientV2: HttpC
     httpClientV2.post(url"$baseUrl/amend").withBody(Json.toJson(registrationRequest))
       .execute[AmendRegistrationResultResponse]
   }
+
+  def displayRegistration(iossNumber: String)(implicit hc: HeaderCarrier): Future[EtmpDisplayRegistrationResponse] =
+    httpClientV2.get(url"$baseUrl/registrations/$iossNumber").execute[EtmpDisplayRegistrationResponse]
 }

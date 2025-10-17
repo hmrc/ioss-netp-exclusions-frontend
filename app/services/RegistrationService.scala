@@ -21,7 +21,7 @@ import connectors.RegistrationConnectorHttpParser.AmendRegistrationResultRespons
 import models.UserAnswers
 import models.etmp.EtmpExclusionReason.*
 import models.etmp.EtmpMessageType.IOSSIntAmendClient
-import models.etmp.{EtmpAdministration, EtmpEuRegistrationDetails, EtmpExclusionReason, EtmpSchemeDetails, TaxRefTraderID, TraderId, VatNumberTraderId}
+import models.etmp.*
 import models.etmp.amend.{EtmpAmendCustomerIdentification, EtmpAmendRegistrationChangeLog, EtmpAmendRegistrationRequest, EtmpExclusionDetails}
 import models.etmp.display.{EtmpDisplayEuRegistrationDetails, EtmpDisplayRegistration, EtmpDisplaySchemeDetails}
 import pages.{StoppedSellingGoodsDatePage, StoppedUsingServiceDatePage}
@@ -37,7 +37,7 @@ class RegistrationService @Inject()(clock: Clock, registrationConnector: Registr
                          answers: UserAnswers,
                          exclusionReason: Option[EtmpExclusionReason],
                          iossNumber: String,
-                        registration: EtmpDisplayRegistration
+                         registration: EtmpDisplayRegistration
                        )(implicit hc: HeaderCarrier): Future[AmendRegistrationResultResponse] = {
 
     registrationConnector.amend(buildEtmpAmendRegistrationRequest(
@@ -66,10 +66,8 @@ class RegistrationService @Inject()(clock: Clock, registrationConnector: Registr
       exclusionDetails = exclusionReason.map(getExclusionDetailsForType(_, answers)),
       customerIdentification = EtmpAmendCustomerIdentification(iossNumber),
       tradingNames = registration.tradingNames,
-      intermediaryDetails = registration.intermediaryDetails,
       otherAddress = registration.otherAddress,
-      schemeDetails = buildSchemeDetailsFromDisplay(registration.schemeDetails),
-      bankDetails = registration.bankDetails
+      schemeDetails = buildSchemeDetailsFromDisplay(registration.schemeDetails)
     )
   }
 
@@ -127,7 +125,7 @@ class RegistrationService @Inject()(clock: Clock, registrationConnector: Registr
       noLongerEligible = false,
       partyType = "NETP",
       exclusionRequestDate = Some(stoppedUsingServiceDate),
-      identificationValidityDate = None,
+      identificationValidityDate = Some(stoppedUsingServiceDate),
       intExclusionRequestDate = None,
       newMemberState = None,
       establishedMemberState = None

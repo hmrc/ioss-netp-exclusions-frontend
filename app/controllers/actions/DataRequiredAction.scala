@@ -16,24 +16,54 @@
 
 package controllers.actions
 
+import connectors.RegistrationConnector
+
 import javax.inject.Inject
 import controllers.routes
 import models.requests.{DataRequest, OptionalDataRequest}
 import logging.Logging
+import models.etmp.display.RegistrationWrapper
+import models.responses.ErrorResponse
 import play.api.mvc.Results.Redirect
 import play.api.mvc.{ActionRefiner, Result}
+import queries.IossNumberQuery
+import uk.gov.hmrc.http.HeaderCarrier
+import uk.gov.hmrc.play.http.HeaderCarrierConverter
 
 import scala.concurrent.{ExecutionContext, Future}
 
-class DataRequiredActionImpl @Inject()(implicit val executionContext: ExecutionContext) extends DataRequiredAction with Logging {
+class DataRequiredActionImpl @Inject()(registrationConnector: RegistrationConnector)
+                                      (implicit val executionContext: ExecutionContext) extends DataRequiredAction with Logging {
 
   override protected def refine[A](request: OptionalDataRequest[A]): Future[Either[Result, DataRequest[A]]] = {
 
     request.userAnswers match {
       case None =>
         Future.successful(Left(Redirect(routes.JourneyRecoveryController.onPageLoad())))
-      case Some(data) =>
-        Future.successful(Right(DataRequest(request.request, request.userId, data)))
+
+      case Some(userAnswers) =>
+        val iossNumber = userAnswers
+          .get(IossNumberQuery)
+          .getOrElse(throw new RuntimeException("IOSS number missing in user answers"))
+
+        implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.session)
+
+        registrationConnector.displayRegistration(iossNumber)(hc).flatMap {
+          case Left(error: ErrorResponse) =>
+            val msg = s"Failed to retrieve registration: ${error.body}"
+            logger.error(msg)
+            Future.failed(new RuntimeException(msg))
+
+          case Right(registrationWrapper: RegistrationWrapper) =>
+            val displayNetpRegistration = registrationWrapper.etmpDisplayRegistration
+            val dataRequest = DataRequest(
+              request = request.request,
+              userId = request.userId,
+              userAnswers = userAnswers,
+              iossNumber = iossNumber,
+              displayNetpRegistration = displayNetpRegistration)
+            Future.successful(Right(dataRequest))
+        }
     }
   }
 }

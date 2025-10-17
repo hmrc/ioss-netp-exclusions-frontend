@@ -31,9 +31,7 @@ class EtmpDisplayRegistrationSpec extends SpecBase {
         "exclusions" -> etmpDisplayRegistration.exclusions,
         "schemeDetails" -> etmpDisplayRegistration.schemeDetails,
         "tradingNames" -> etmpDisplayRegistration.tradingNames,
-        "intermediaryDetails" -> etmpDisplayRegistration.intermediaryDetails,
         "otherAddress" -> etmpDisplayRegistration.otherAddress,
-        "bankDetails" -> etmpDisplayRegistration.bankDetails,
         "customerIdentification" -> etmpDisplayRegistration.customerIdentification,
         "clientDetails" -> etmpDisplayRegistration.clientDetails,
         "adminUse" -> etmpDisplayRegistration.adminUse
@@ -43,9 +41,7 @@ class EtmpDisplayRegistrationSpec extends SpecBase {
         exclusions = etmpDisplayRegistration.exclusions,
         schemeDetails = etmpDisplayRegistration.schemeDetails,
         tradingNames = etmpDisplayRegistration.tradingNames,
-        intermediaryDetails = etmpDisplayRegistration.intermediaryDetails,
         otherAddress = etmpDisplayRegistration.otherAddress,
-        bankDetails = etmpDisplayRegistration.bankDetails,
         customerIdentification = etmpDisplayRegistration.customerIdentification,
         clientDetails = etmpDisplayRegistration.clientDetails,
         adminUse = etmpDisplayRegistration.adminUse
@@ -60,11 +56,9 @@ class EtmpDisplayRegistrationSpec extends SpecBase {
         customerIdentification = etmpDisplayRegistration.customerIdentification,
         tradingNames = etmpDisplayRegistration.tradingNames,
         clientDetails = etmpDisplayRegistration.clientDetails,
-        intermediaryDetails = None,
         otherAddress = etmpDisplayRegistration.otherAddress,
         schemeDetails = etmpDisplayRegistration.schemeDetails,
         exclusions = etmpDisplayRegistration.exclusions,
-        bankDetails = etmpDisplayRegistration.bankDetails,
         adminUse = etmpDisplayRegistration.adminUse
       )
 
@@ -75,7 +69,6 @@ class EtmpDisplayRegistrationSpec extends SpecBase {
         "otherAddress" -> etmpDisplayRegistration.otherAddress,
         "schemeDetails" -> etmpDisplayRegistration.schemeDetails,
         "exclusions" -> etmpDisplayRegistration.exclusions,
-        "bankDetails" -> etmpDisplayRegistration.bankDetails,
         "adminUse" -> etmpDisplayRegistration.adminUse
       )
 

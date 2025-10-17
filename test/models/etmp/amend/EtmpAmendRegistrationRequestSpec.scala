@@ -28,10 +28,8 @@ class EtmpAmendRegistrationRequestSpec extends SpecBase {
   private val administration = etmpAmendRegistrationRequest.administration
   private val customerIdentification = etmpAmendRegistrationRequest.customerIdentification
   private val tradingNames = etmpAmendRegistrationRequest.tradingNames
-  private val intermediaryDetails = etmpAmendRegistrationRequest.intermediaryDetails
   private val otherAddress = etmpAmendRegistrationRequest.otherAddress
   private val schemeDetails = etmpAmendRegistrationRequest.schemeDetails
-  private val bankDetails = etmpAmendRegistrationRequest.bankDetails
   private val changeLog = arbitrary[EtmpAmendRegistrationChangeLog].sample.value
   private val exclusionDetails = etmpAmendRegistrationRequest.exclusionDetails
 
@@ -44,10 +42,8 @@ class EtmpAmendRegistrationRequestSpec extends SpecBase {
         "changeLog" -> changeLog,
         "customerIdentification" -> customerIdentification,
         "tradingNames" -> tradingNames,
-        "intermediaryDetails" -> intermediaryDetails,
         "otherAddress" -> otherAddress,
-        "schemeDetails" -> schemeDetails,
-        "bankDetails" -> bankDetails
+        "schemeDetails" -> schemeDetails
       )
 
       val expectedResult = EtmpAmendRegistrationRequest(
@@ -55,10 +51,8 @@ class EtmpAmendRegistrationRequestSpec extends SpecBase {
         changeLog = changeLog,
         customerIdentification = customerIdentification,
         tradingNames = tradingNames,
-        intermediaryDetails = intermediaryDetails,
         otherAddress = otherAddress,
         schemeDetails = schemeDetails,
-        bankDetails = bankDetails,
         exclusionDetails = exclusionDetails
       )
 
@@ -79,10 +73,8 @@ class EtmpAmendRegistrationRequestSpec extends SpecBase {
         "changeLog" -> changeLog,
         "customerIdentification" -> customerIdentification,
         "tradingNames" -> 12345,
-        "intermediaryDetails" -> intermediaryDetails,
         "otherAddress" -> otherAddress,
-        "schemeDetails" -> schemeDetails,
-        "bankDetails" -> bankDetails
+        "schemeDetails" -> schemeDetails
       )
 
       json.validate[EtmpAmendRegistrationRequest] mustBe a[JsError]

@@ -34,3 +34,5 @@ GET         /exclusions-stopped-using-service-date       controllers.StoppedUsin
 POST        /exclusions-stopped-using-service-date       controllers.StoppedUsingServiceDateController.onSubmit(waypoints: Waypoints ?= EmptyWaypoints)
 
 GET         /client-exclusions-request-received          controllers.ApplicationCompleteController.onPageLoad()
+
+GET         /submission-failure                          controllers.SubmissionFailureController.onPageLoad()

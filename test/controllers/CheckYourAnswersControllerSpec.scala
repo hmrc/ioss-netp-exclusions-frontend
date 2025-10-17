@@ -18,12 +18,15 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
+import connectors.RegistrationConnector
 import date.{Dates, Today}
 import models.CheckMode
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.*
 import play.api.i18n.Messages
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
@@ -32,6 +35,7 @@ import viewmodels.govuk.SummaryListFluency
 import views.html.CheckYourAnswersView
 
 import java.time.LocalDate
+import scala.concurrent.Future
 
 class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
@@ -257,7 +261,15 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
     "must redirect to the correct page" in {
 
-      val application = applicationBuilder(userAnswers = Some(answers)).build()
+      val mockRegistrationConnector = mock[RegistrationConnector]
+      
+      when(mockRegistrationConnector.amend(any())(any())) thenReturn
+        Future.successful(Right(()))
+
+
+      val application = applicationBuilder(userAnswers = Some(answers))
+        .overrides(bind[RegistrationConnector].toInstance(mockRegistrationConnector))
+        .build()
 
       running(application) {
         val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePrompt = false).url)

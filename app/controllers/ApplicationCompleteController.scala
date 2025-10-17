@@ -57,11 +57,13 @@ class ApplicationCompleteController @Inject()(
 
     request.userAnswers.get(StoppedSellingGoodsDatePage).map { date =>
       val leaveDate = dates.getLeaveDateWhenStoppedSellingGoods
-
+      val vatReturnDate = date
+      
       Ok(view(
         config.iossYourAccountUrl,
         clientName,
         dates.formatter.format(leaveDate),
+        dates.monthFormatter.format(vatReturnDate)
       ))
 
     }
@@ -71,10 +73,13 @@ class ApplicationCompleteController @Inject()(
     request.userAnswers.get(StoppedUsingServiceDatePage).map { stoppedUsingServiceDate =>
 
       val leaveDate = dates.getLeaveDateWhenStoppedUsingService(stoppedUsingServiceDate)
+      val vatReturnDate = stoppedUsingServiceDate
+      
       Ok(view(
         config.iossYourAccountUrl,
         clientName,
-        dates.formatter.format(leaveDate)
+        dates.formatter.format(leaveDate),
+        dates.monthFormatter.format(vatReturnDate)
       ))
     }
   }
