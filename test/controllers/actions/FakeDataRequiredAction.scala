@@ -41,7 +41,8 @@ class FakeDataRequiredAction(
           userId = request.userId,
           userAnswers = userAnswers,
           iossNumber = iossNumber,
-          displayNetpRegistration = displayNetpRegistration
+          displayNetpRegistration = displayNetpRegistration,
+          intermediaryNumber = request.intermediaryNumber
         )
         Future.successful(Right(dataRequest))
       case None =>

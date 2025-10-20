@@ -61,7 +61,9 @@ class DataRequiredActionImpl @Inject()(registrationConnector: RegistrationConnec
               userId = request.userId,
               userAnswers = userAnswers,
               iossNumber = iossNumber,
-              displayNetpRegistration = displayNetpRegistration)
+              displayNetpRegistration = displayNetpRegistration,
+              intermediaryNumber = request.intermediaryNumber
+            )
             Future.successful(Right(dataRequest))
         }
     }

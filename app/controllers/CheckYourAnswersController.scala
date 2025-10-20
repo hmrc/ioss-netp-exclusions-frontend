@@ -26,7 +26,7 @@ import models.{CheckMode, UserAnswers}
 import pages.{CheckYourAnswersPage, EmptyWaypoints, LeaveSchemePage, StopSellingGoodsPage, Waypoint, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import services.RegistrationService
+import services.{ClientDetailService, RegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CompletionChecks
 import viewmodels.govuk.summarylist.*
@@ -42,33 +42,37 @@ class CheckYourAnswersController @Inject()(
                                             dates: Dates,
                                             view: CheckYourAnswersView,
                                             config: FrontendAppConfig,
-                                            registrationService: RegistrationService
+                                            registrationService: RegistrationService,
+                                            clientDetailService: ClientDetailService
                                           )(implicit ec: ExecutionContext)
   extends FrontendBaseController with I18nSupport with CompletionChecks with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(): Action[AnyContent] = cc.identifyAndGetData {
+  def onPageLoad(): Action[AnyContent] = cc.identifyAndGetData.async {
     implicit request =>
 
-      val clientName = "There is no Try Ltd"
-      val thisPage = CheckYourAnswersPage
-      val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(thisPage, CheckMode, CheckYourAnswersPage.urlFragment))
-      
-      val stopSellingGoodsSummaryRow = StopSellingGoodsSummary.row(request.userAnswers, waypoints, thisPage)
-      val stoppedSellingGoodsDateRow = StoppedSellingGoodsDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
-      val stoppedUsingServiceDateRow = StoppedUsingServiceDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
+      for {
+        clientName <- clientDetailService.getClientName
+      } yield {
+        val thisPage = CheckYourAnswersPage
+        val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(thisPage, CheckMode, CheckYourAnswersPage.urlFragment))
 
-      val list = SummaryListViewModel(
-        rows = Seq(
-          stopSellingGoodsSummaryRow,
-          stoppedSellingGoodsDateRow,
-          stoppedUsingServiceDateRow
-        ).flatten
-      )
+        val stopSellingGoodsSummaryRow = StopSellingGoodsSummary.row(request.userAnswers, waypoints, thisPage)
+        val stoppedSellingGoodsDateRow = StoppedSellingGoodsDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
+        val stoppedUsingServiceDateRow = StoppedUsingServiceDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
 
-      val isValid = validate()
-      Ok(view(waypoints, list, isValid, config.iossYourAccountUrl, clientName))
+        val list = SummaryListViewModel(
+          rows = Seq(
+            stopSellingGoodsSummaryRow,
+            stoppedSellingGoodsDateRow,
+            stoppedUsingServiceDateRow
+          ).flatten
+        )
+
+        val isValid = validate()
+        Ok(view(waypoints, list, isValid, config.iossYourAccountUrl, clientName))
+      }
   }
 
   def onSubmit(waypoints: Waypoints, incompletePrompt: Boolean): Action[AnyContent] = cc.identifyAndGetData.async {

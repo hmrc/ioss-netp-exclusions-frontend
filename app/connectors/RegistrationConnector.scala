@@ -32,12 +32,18 @@ class RegistrationConnector @Inject()(config: Configuration, httpClientV2: HttpC
                                      (implicit executionContext: ExecutionContext) {
 
   private val baseUrl: Service = config.get[Service]("microservice.services.ioss-netp-registration")
+  private val intermediaryUrl: Service = config.get[Service]("microservice.services.ioss-intermediary-registration")
 
   def amend(registrationRequest: EtmpAmendRegistrationRequest)(implicit hc: HeaderCarrier): Future[AmendRegistrationResultResponse] = {
     httpClientV2.post(url"$baseUrl/amend").withBody(Json.toJson(registrationRequest))
       .execute[AmendRegistrationResultResponse]
   }
 
-  def displayRegistration(iossNumber: String)(implicit hc: HeaderCarrier): Future[EtmpDisplayRegistrationResponse] =
+  def displayRegistration(iossNumber: String)(implicit hc: HeaderCarrier): Future[EtmpDisplayRegistrationResponse] = {
     httpClientV2.get(url"$baseUrl/registrations/$iossNumber").execute[EtmpDisplayRegistrationResponse]
+  }
+
+  def displayIntermediaryRegistration(intermediaryNumber: String)(implicit hc: HeaderCarrier): Future[EtmpDisplayIntermediaryRegistrationResponse] = {
+    httpClientV2.get(url"$intermediaryUrl/get-registration/$intermediaryNumber").execute[EtmpDisplayIntermediaryRegistrationResponse]
+  }
 }

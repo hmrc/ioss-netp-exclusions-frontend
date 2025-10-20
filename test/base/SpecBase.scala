@@ -36,6 +36,8 @@ import play.api.test.FakeRequest
 import queries.IossNumberQuery
 import uk.gov.hmrc.domain.Vrn
 
+import java.time.{Clock, Instant, LocalDate, ZoneId}
+
 trait SpecBase
   extends AnyFreeSpec
     with Matchers
@@ -58,7 +60,12 @@ trait SpecBase
     FakeRequest("", "/endpoint").withCSRFToken.asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
     
   def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId)
-  val emptyUserAnswersWithIossNumber = emptyUserAnswers.set(IossNumberQuery, iossNumber).success.value
+  val emptyUserAnswersWithIossNumber: UserAnswers = emptyUserAnswers.set(IossNumberQuery, iossNumber).success.value
+
+  val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
+  val arbitraryInstant: Instant = arbitraryDate.atStartOfDay(ZoneId.systemDefault).toInstant
+  val stubClockAtArbitraryDate: Clock = Clock.fixed(arbitraryInstant, ZoneId.systemDefault)
+
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 

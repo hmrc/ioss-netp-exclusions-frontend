@@ -33,3 +33,12 @@ object EtmpDisplayRegistration {
   
   implicit val format: OFormat[EtmpDisplayRegistration] = Json.format[EtmpDisplayRegistration]
 }
+
+case class EtmpDisplayIntermediaryRegistration(
+                                    clientDetails: Seq[EtmpClientDetails]
+                                  )
+
+object EtmpDisplayIntermediaryRegistration {
+
+  implicit val format: OFormat[EtmpDisplayIntermediaryRegistration] = Json.format[EtmpDisplayIntermediaryRegistration]
+}

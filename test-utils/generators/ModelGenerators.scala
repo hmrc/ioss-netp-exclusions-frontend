@@ -58,7 +58,7 @@ trait ModelGenerators {
     Arbitrary {
       for {
         messageType <- Gen.oneOf(EtmpMessageType.values)
-      } yield EtmpAdministration(messageType, "IOSSIntAmend")
+      } yield EtmpAdministration(messageType, "IOSSIntAmendClient")
     }
   }
 
@@ -330,8 +330,7 @@ trait ModelGenerators {
   implicit lazy val arbitraryEtmpIntermediaryDetails: Arbitrary[EtmpIntermediaryDetails] = {
     Arbitrary {
       for {
-        amountOfOtherRegistrations <- Gen.chooseNum(1, 5)
-        otherRegistrationDetails <- Gen.listOfN(amountOfOtherRegistrations, arbitraryEtmpOtherIossIntermediaryRegistrations.arbitrary)
+        otherRegistrationDetails <- Gen.listOfN(2, arbitraryEtmpOtherIossIntermediaryRegistrations.arbitrary)
       } yield EtmpIntermediaryDetails(otherRegistrationDetails)
     }
   }

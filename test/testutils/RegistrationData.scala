@@ -64,7 +64,7 @@ object RegistrationData extends SpecBase {
     administration = arbitrary[EtmpAdministration].sample.value,
     customerIdentification = arbitrary[EtmpCustomerIdentification].sample.value,
     tradingNames = Seq(arbitrary[EtmpTradingName].sample.value),
-    intermediaryDetails = Some(arbitrary[EtmpIntermediaryDetails].sample.value),
+    intermediaryDetails = Some(arbitraryEtmpIntermediaryDetails.arbitrary.sample.value),
     otherAddress = Some(arbitrary[EtmpOtherAddress].sample.value),
     schemeDetails = etmpSchemeDetails,
     bankDetails = None
@@ -72,11 +72,11 @@ object RegistrationData extends SpecBase {
 
   val etmpAmendRegistrationChangeLog: EtmpAmendRegistrationChangeLog = EtmpAmendRegistrationChangeLog(
     tradingNames = true,
-    fixedEstablishments = false,
+    fixedEstablishments = true,
     contactDetails = true,
-    bankDetails = false,
-    reRegistration = false,
-    otherAddress = false
+    bankDetails = true,
+    reRegistration = true,
+    otherAddress = true
   )
 
   val etmpAmendCustomerIdentification: EtmpAmendCustomerIdentification = EtmpAmendCustomerIdentification(
@@ -90,13 +90,12 @@ object RegistrationData extends SpecBase {
   )
 
   val etmpAmendRegistrationRequest: EtmpAmendRegistrationRequest = EtmpAmendRegistrationRequest(
-    administration = arbitrary[EtmpAdministration].sample.value,
+    administration = EtmpAdministration(EtmpMessageType.IOSSIntAmendClient),
     changeLog = etmpAmendRegistrationChangeLog,
     customerIdentification = etmpAmendCustomerIdentification,
     tradingNames = Seq(arbitrary[EtmpTradingName].sample.value),
-    otherAddress = Some(arbitrary[EtmpOtherAddress].sample.value),
+    otherAddress = etmpRegistrationRequest.otherAddress,
     schemeDetails = etmpSchemeDetails,
     exclusionDetails = None
   )
-  
 }

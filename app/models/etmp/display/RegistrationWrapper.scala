@@ -24,3 +24,10 @@ object RegistrationWrapper {
 
   implicit val format: OFormat[RegistrationWrapper] = Json.format[RegistrationWrapper]
 }
+
+case class IntermediaryRegistrationWrapper(etmpDisplayRegistration: EtmpDisplayIntermediaryRegistration)
+
+object IntermediaryRegistrationWrapper {
+
+  implicit val format: OFormat[IntermediaryRegistrationWrapper] = Json.format[IntermediaryRegistrationWrapper]
+}
