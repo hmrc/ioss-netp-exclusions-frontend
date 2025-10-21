@@ -18,17 +18,34 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
+import connectors.RegistrationConnector
+import models.requests.DataRequest
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.ClientDetailService
+import uk.gov.hmrc.http.HeaderCarrier
 import views.html.SubmissionFailureView
 
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class SubmissionFailureControllerSpec extends SpecBase {
+
+  private val mockRegistrationConnector: RegistrationConnector = mock[RegistrationConnector]
+
+  private val mockClientDetailService: ClientDetailService = new ClientDetailService(mockRegistrationConnector) {
+    override def getClientName(implicit request: DataRequest[_], hc: HeaderCarrier): Future[String] =
+      Future.successful(clientName)
+  }
 
   "SubmissionFailure Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswersWithIossNumber)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswersWithIossNumber))
+        .overrides(bind[ClientDetailService].toInstance(mockClientDetailService))
+        .build()
 
       running(application) {
         val request = FakeRequest(GET, routes.SubmissionFailureController.onPageLoad().url)

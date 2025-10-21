@@ -22,8 +22,11 @@ import controllers.actions.*
 import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.ClientDetailService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.SubmissionFailureView
+
+import scala.concurrent.ExecutionContext
 
 class SubmissionFailureController @Inject()(
                                        override val messagesApi: MessagesApi,
@@ -32,14 +35,16 @@ class SubmissionFailureController @Inject()(
                                        requireData: DataRequiredAction,
                                        val controllerComponents: MessagesControllerComponents,
                                        view: SubmissionFailureView,
-                                       config: FrontendAppConfig
-                                     ) extends FrontendBaseController with I18nSupport {
+                                       config: FrontendAppConfig,
+                                       clientDetailService: ClientDetailService
+                                     ) (implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData) {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-      
-      val clientName = "There is no Try Ltd"
-      
-      Ok(view(config.iossYourAccountUrl, clientName))
+
+      clientDetailService.getClientName.map { clientName =>
+
+        Ok(view(config.iossYourAccountUrl, clientName))
+      }
   }
 }
