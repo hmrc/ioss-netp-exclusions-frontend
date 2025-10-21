@@ -50,8 +50,24 @@ class Dates @Inject()(val today: Today) {
       firstDayOfTheNextMonth.plusMonths(1)
     }
   }
+
   def getLeaveDateWhenStoppedSellingGoods: LocalDate = {
     today.date.`with`(firstDayOfNextMonth())
+  }
+
+  def getVatReturnMonthWhenStoppedUsingService(exclusionDate: LocalDate): String = {
+    val lastDayOfTheMonth = today.date.`with`(lastDayOfMonth())
+    val firstDayOfThisMonth = exclusionDate
+    val firstDayOfTheNextMonth = today.date.`with`(firstDayOfNextMonth())
+
+    val leaveDate =
+      if (exclusionDate <= lastDayOfTheMonth.minusDays(StopDayOfMonthSplit)) {
+        firstDayOfThisMonth
+      } else {
+        firstDayOfTheNextMonth
+      }
+
+    leaveDate.format(monthFormatter)
   }
 }
 

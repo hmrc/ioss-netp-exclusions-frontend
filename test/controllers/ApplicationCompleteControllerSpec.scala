@@ -197,7 +197,7 @@ class ApplicationCompleteControllerSpec extends SpecBase {
 
           status(result) mustEqual OK
           val maxChangeDate = "1 March 2024"
-          val vatReturnDate = "January 2024"
+          val vatReturnDate = "February 2024"
           contentAsString(result) mustEqual view(
             config.iossYourAccountUrl,
             clientName,
