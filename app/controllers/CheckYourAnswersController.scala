@@ -21,10 +21,12 @@ import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import date.Dates
 import logging.Logging
-import models.CheckMode
-import pages.{CheckYourAnswersPage, EmptyWaypoints, Waypoint, Waypoints}
+import models.etmp.EtmpExclusionReason
+import models.{CheckMode, UserAnswers}
+import pages.{CheckYourAnswersPage, EmptyWaypoints, LeaveSchemePage, StopSellingGoodsPage, Waypoint, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.{ClientDetailService, RegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CompletionChecks
 import viewmodels.govuk.summarylist.*
@@ -32,37 +34,45 @@ import views.html.CheckYourAnswersView
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.{StopSellingGoodsSummary, StoppedSellingGoodsDateSummary, StoppedUsingServiceDateSummary}
 
+import scala.concurrent.ExecutionContext
+
 class CheckYourAnswersController @Inject()(
                                             override val messagesApi: MessagesApi,
                                             cc: AuthenticatedControllerComponents,
                                             dates: Dates,
                                             view: CheckYourAnswersView,
-                                            config: FrontendAppConfig
-                                          ) extends FrontendBaseController with I18nSupport with CompletionChecks with Logging {
+                                            config: FrontendAppConfig,
+                                            registrationService: RegistrationService,
+                                            clientDetailService: ClientDetailService
+                                          )(implicit ec: ExecutionContext)
+  extends FrontendBaseController with I18nSupport with CompletionChecks with Logging {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(): Action[AnyContent] = cc.identifyAndGetData {
+  def onPageLoad(): Action[AnyContent] = cc.identifyAndGetData.async {
     implicit request =>
 
-      val clientName = "There is no Try Ltd"
-      val thisPage = CheckYourAnswersPage
-      val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(thisPage, CheckMode, CheckYourAnswersPage.urlFragment))
-      
-      val stopSellingGoodsSummaryRow = StopSellingGoodsSummary.row(request.userAnswers, waypoints, thisPage)
-      val stoppedSellingGoodsDateRow = StoppedSellingGoodsDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
-      val stoppedUsingServiceDateRow = StoppedUsingServiceDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
-      
-      val list = SummaryListViewModel(
-        rows = Seq(
-          stopSellingGoodsSummaryRow,
-          stoppedSellingGoodsDateRow,
-          stoppedUsingServiceDateRow
-        ).flatten
-      )
+      for {
+        clientName <- clientDetailService.getClientName
+      } yield {
+        val thisPage = CheckYourAnswersPage
+        val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(thisPage, CheckMode, CheckYourAnswersPage.urlFragment))
 
-      val isValid = validate()
-      Ok(view(waypoints, list, isValid, config.iossYourAccountUrl, clientName))
+        val stopSellingGoodsSummaryRow = StopSellingGoodsSummary.row(request.userAnswers, waypoints, thisPage)
+        val stoppedSellingGoodsDateRow = StoppedSellingGoodsDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
+        val stoppedUsingServiceDateRow = StoppedUsingServiceDateSummary.row(request.userAnswers, waypoints, thisPage, dates)
+
+        val list = SummaryListViewModel(
+          rows = Seq(
+            stopSellingGoodsSummaryRow,
+            stoppedSellingGoodsDateRow,
+            stoppedUsingServiceDateRow
+          ).flatten
+        )
+
+        val isValid = validate()
+        Ok(view(waypoints, list, isValid, config.iossYourAccountUrl, clientName))
+      }
   }
 
   def onSubmit(waypoints: Waypoints, incompletePrompt: Boolean): Action[AnyContent] = cc.identifyAndGetData.async {
@@ -74,7 +84,39 @@ class CheckYourAnswersController @Inject()(
           Redirect(routes.CheckYourAnswersController.onPageLoad()).toFuture
         }
         case None =>
-          Redirect(CheckYourAnswersPage.navigate(waypoints, request.userAnswers, request.userAnswers).route).toFuture
+
+          val exclusionReason = determineExclusionReason(request.userAnswers)
+
+          registrationService.amendRegistration(
+            answers = request.userAnswers,
+            exclusionReason = Some(exclusionReason),
+            iossNumber = request.iossNumber,
+            registration = request.displayNetpRegistration
+          ).map {
+            case Right(_) =>
+              Redirect(CheckYourAnswersPage.navigate(waypoints, request.userAnswers, request.userAnswers).route)
+            case Left(e) =>
+              logger.error(s"Failure to submit self exclusion ${e.body}")
+              Redirect(routes.SubmissionFailureController.onPageLoad())
+          }
       }
+  }
+
+  private def determineExclusionReason(userAnswers: UserAnswers): EtmpExclusionReason = {
+    userAnswers.get(StopSellingGoodsPage) match {
+      case Some(true) =>
+        EtmpExclusionReason.NoLongerSupplies
+      case Some(false) =>
+        userAnswers.get(LeaveSchemePage) match {
+          case Some(true) =>
+            EtmpExclusionReason.VoluntarilyLeaves
+          case Some(false) =>
+            throw new Exception("User chose not to stop selling goods or leave scheme")
+          case None =>
+            throw new Exception("Expected answer for LeaveSchemePage when StopSellingGoodsPage = false")
+        }
+      case _ =>
+        throw new Exception("Expected answer for Stopped Selling Goods page")
+    }
   }
 }

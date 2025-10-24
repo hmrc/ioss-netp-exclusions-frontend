@@ -25,8 +25,11 @@ import pages.{StopSellingGoodsPage, StoppedSellingGoodsDatePage, StoppedUsingSer
 import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
+import services.ClientDetailService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ApplicationCompleteView
+
+import scala.concurrent.{ExecutionContext, Future}
 
 
 class ApplicationCompleteController @Inject()(
@@ -38,44 +41,54 @@ class ApplicationCompleteController @Inject()(
                                         view: ApplicationCompleteView,
                                         config: FrontendAppConfig,
                                         dates: Dates,
-                                    ) extends FrontendBaseController with I18nSupport {
+                                        clientDetailService: ClientDetailService
+                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  private val clientName = "There is no Try Ltd"
-
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData) {
+  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
     implicit request =>
-      request.userAnswers.get(StopSellingGoodsPage).flatMap { stopSellingGoods =>
-        if (stopSellingGoods) {
-          onStopSellingGoods()
-        } else {
-          onStopUsingService()
-        }
-      }.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      request.userAnswers.get(StopSellingGoodsPage) match {
+        case Some(true)  => onStopSellingGoods()
+        case Some(false) => onStopUsingService()
+        case None        => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+      }
   }
 
-  private def onStopSellingGoods()(implicit request: DataRequest[_]): Option[Result] = {
+  private def onStopSellingGoods()(implicit request: DataRequest[_]): Future[Result] = {
 
-    request.userAnswers.get(StoppedSellingGoodsDatePage).map { date =>
-      val leaveDate = dates.getLeaveDateWhenStoppedSellingGoods
+    for {
+      clientName <- clientDetailService.getClientName
+    } yield {
+      request.userAnswers.get(StoppedSellingGoodsDatePage).map { date =>
+        val leaveDate = dates.getLeaveDateWhenStoppedSellingGoods
+        val vatReturnDate = date
 
-      Ok(view(
-        config.iossYourAccountUrl,
-        clientName,
-        dates.formatter.format(leaveDate.minusDays(1)),
-      ))
-
+        Ok(view(
+          config.iossYourAccountUrl,
+          clientName,
+          dates.formatter.format(leaveDate),
+          dates.monthFormatter.format(vatReturnDate)
+        ))
+      }.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
     }
   }
 
-  private def onStopUsingService()(implicit request: DataRequest[_]): Option[Result] = {
-    request.userAnswers.get(StoppedUsingServiceDatePage).map { stoppedUsingServiceDate =>
+  private def onStopUsingService()(implicit request: DataRequest[_]): Future[Result] = {
 
-      val leaveDate = dates.getLeaveDateWhenStoppedUsingService(stoppedUsingServiceDate)
-      Ok(view(
-        config.iossYourAccountUrl,
-        clientName,
-        dates.formatter.format(leaveDate.minusDays(1))
-      ))
+    for {
+      clientName <- clientDetailService.getClientName
+    } yield {
+      request.userAnswers.get(StoppedUsingServiceDatePage).map { stoppedUsingServiceDate =>
+
+        val leaveDate = dates.getLeaveDateWhenStoppedUsingService(stoppedUsingServiceDate)
+        val vatReturnDate = dates.getVatReturnMonthWhenStoppedUsingService(stoppedUsingServiceDate)
+
+        Ok(view(
+          config.iossYourAccountUrl,
+          clientName,
+          dates.formatter.format(leaveDate),
+          vatReturnDate
+        ))
+      }.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
     }
   }
 }

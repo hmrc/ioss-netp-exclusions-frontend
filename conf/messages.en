@@ -97,7 +97,13 @@ applicationComplete.sentMessage = We have sent them a message to let them know.
 applicationComplete.next.heading = What happens next
 applicationComplete.next.info.top = You must:
 applicationComplete.next.info.bullet0 = complete any outstanding VAT returns for {0}
-applicationComplete.next.info.bullet1 = complete their final VAT return
-applicationComplete.next.info.bullet2 = pay any VAT you still owe on their account
-applicationComplete.next.info.bottom.p1= If you wish to cancel this, you must contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a> by <strong>{0}</strong>
+applicationComplete.next.info.bullet1 = complete their final, {0} VAT return
+applicationComplete.next.info.bullet2 = pay any VAT that you still owe on their account
+applicationComplete.next.info.bottom.p1= If you wish to undo this removal, you must contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a> by <strong>{0}</strong>
 applicationComplete.next.info.returnToAccount = Return to your account
+
+submissionFailure.title = We have a problem with our service right now
+submissionFailure.heading = We have not received your request to remove {0} from your account
+submissionFailure.tryAgainLater = Please try again later.
+submissionFailure.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
+submissionFailure.next.info.returnToAccount = Back to your account

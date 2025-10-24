@@ -25,6 +25,7 @@
     yourAccountUrl: String,
     clientName: String,
     maxChangeDate: String,
+    vatReturnDate: String
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("applicationComplete.title", clientName))) {
@@ -43,7 +44,7 @@
     </p>
     <ul class="govuk-list govuk-list--bullet">
         <li>@messages("applicationComplete.next.info.bullet0", clientName)</li>
-        <li>@messages("applicationComplete.next.info.bullet1")</li>
+        <li>@messages("applicationComplete.next.info.bullet1", vatReturnDate)</li>
         <li>@messages("applicationComplete.next.info.bullet2")</li>
     </ul>
 

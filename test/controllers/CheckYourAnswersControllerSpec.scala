@@ -18,20 +18,28 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
+import connectors.RegistrationConnector
 import date.{Dates, Today}
 import models.CheckMode
+import models.requests.DataRequest
+import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar.mock
 import pages.*
 import play.api.i18n.Messages
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.ClientDetailService
 import uk.gov.hmrc.govukfrontend.views.viewmodels.content.Text
+import uk.gov.hmrc.http.HeaderCarrier
 import viewmodels.checkAnswers.{StopSellingGoodsSummary, StoppedSellingGoodsDateSummary, StoppedUsingServiceDateSummary}
 import viewmodels.govuk.SummaryListFluency
 import views.html.CheckYourAnswersView
 
 import java.time.LocalDate
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
@@ -43,212 +51,229 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
     .set(StopSellingGoodsPage, true).success.value
     .set(StoppedSellingGoodsDatePage, today).success.value
 
+  private val mockRegistrationConnector: RegistrationConnector = mock[RegistrationConnector]
+
+  private val mockClientDetailService: ClientDetailService = new ClientDetailService(mockRegistrationConnector) {
+    override def getClientName(implicit request: DataRequest[_], hc: HeaderCarrier): Future[String] =
+      Future.successful(clientName)
+  }
+
+
   "Check Your Answers Controller" - {
 
-    "must return OK and the correct view for a GET" in {
+    "onPageLoad" - {
 
-      val application = applicationBuilder(userAnswers = Some(answers)).build()
+      "must return OK and the correct view for a GET" in {
 
-      running(application) {
-        implicit val msgs: Messages = messages(application)
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+        val application = applicationBuilder(userAnswers = Some(answers))
+          .overrides(bind[ClientDetailService].toInstance(mockClientDetailService))
+          .build()
 
-        val result = route(application, request).value
+        running(application) {
+          implicit val msgs: Messages = messages(application)
+          val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
-        val appConfig = application.injector.instanceOf[FrontendAppConfig]
-        val view = application.injector.instanceOf[CheckYourAnswersView]
-        val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
-        val list = SummaryListViewModel(
-          Seq(
-            StopSellingGoodsSummary.row(answers, waypoints, CheckYourAnswersPage),
-            StoppedSellingGoodsDateSummary.row(answers, waypoints, CheckYourAnswersPage, date),
-            StoppedUsingServiceDateSummary.row(answers, waypoints, CheckYourAnswersPage, date)
-          ).flatten
-        )
+          val result = route(application, request).value
 
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(
-          waypoints,
-          list,
-          isValid = true,
-          appConfig.iossYourAccountUrl,
-          clientName
-        )(request, messages(application)).toString
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val view = application.injector.instanceOf[CheckYourAnswersView]
+          val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
+          val list = SummaryListViewModel(
+            Seq(
+              StopSellingGoodsSummary.row(answers, waypoints, CheckYourAnswersPage),
+              StoppedSellingGoodsDateSummary.row(answers, waypoints, CheckYourAnswersPage, date),
+              StoppedUsingServiceDateSummary.row(answers, waypoints, CheckYourAnswersPage, date)
+            ).flatten
+          )
+
+          status(result) mustEqual OK
+          contentAsString(result) mustEqual view(
+            waypoints,
+            list,
+            isValid = true,
+            appConfig.iossYourAccountUrl,
+            clientName
+          )(request, messages(application)).toString
+        }
       }
-    }
 
-    "must include StopSellingGoodsSummary row in the summary list when data is present" in {
-      val answersWithStopSellingGoods = answers
-        .set(StopSellingGoodsPage, true).success.value
+      "must include StopSellingGoodsSummary row in the summary list when data is present" in {
+        val answersWithStopSellingGoods = answers
+          .set(StopSellingGoodsPage, true).success.value
 
-      val application = applicationBuilder(userAnswers = Some(answersWithStopSellingGoods))
-        .build()
+        val application = applicationBuilder(userAnswers = Some(answersWithStopSellingGoods))
+          .overrides(bind[ClientDetailService].toInstance(mockClientDetailService))
+          .build()
 
-      running(application) {
-        implicit val msgs: Messages = messages(application)
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+        running(application) {
+          implicit val msgs: Messages = messages(application)
+          val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[CheckYourAnswersView]
-        val appConfig = application.injector.instanceOf[FrontendAppConfig]
-        val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
-        val list = SummaryListViewModel(
-          Seq(
-            StopSellingGoodsSummary.row(answersWithStopSellingGoods, waypoints, CheckYourAnswersPage),
-            StoppedSellingGoodsDateSummary.row(answersWithStopSellingGoods, waypoints, CheckYourAnswersPage, date),
-            StoppedUsingServiceDateSummary.row(answersWithStopSellingGoods, waypoints, CheckYourAnswersPage, date)
-          ).flatten
-        )
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[CheckYourAnswersView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
+          val list = SummaryListViewModel(
+            Seq(
+              StopSellingGoodsSummary.row(answersWithStopSellingGoods, waypoints, CheckYourAnswersPage),
+              StoppedSellingGoodsDateSummary.row(answersWithStopSellingGoods, waypoints, CheckYourAnswersPage, date),
+              StoppedUsingServiceDateSummary.row(answersWithStopSellingGoods, waypoints, CheckYourAnswersPage, date)
+            ).flatten
+          )
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
-          waypoints,
-          list,
-          isValid = true,
-          appConfig.iossYourAccountUrl,
-          clientName)(request, msgs).toString
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            waypoints,
+            list,
+            isValid = true,
+            appConfig.iossYourAccountUrl,
+            clientName)(request, msgs).toString
 
-        val stopSellingGoodsRow = StopSellingGoodsSummary.row(answersWithStopSellingGoods, waypoints, CheckYourAnswersPage)
-        stopSellingGoodsRow mustBe defined
+          val stopSellingGoodsRow = StopSellingGoodsSummary.row(answersWithStopSellingGoods, waypoints, CheckYourAnswersPage)
+          stopSellingGoodsRow mustBe defined
 
-        val actualValue = stopSellingGoodsRow.value.value.content.asInstanceOf[Text].value
+          val actualValue = stopSellingGoodsRow.value.value.content.asInstanceOf[Text].value
 
-        val expectedValue = msgs("site.yes")
+          val expectedValue = msgs("site.yes")
 
-        actualValue mustBe expectedValue
+          actualValue mustBe expectedValue
+        }
       }
-    }
 
-    "must include StopSellingGoodsSummary row with 'site.no' when StopSellingGoodsPage is false" in {
-      val answersWithStopSellingGoodsNo = answers
-        .set(StopSellingGoodsPage, false).success.value
-        .set(LeaveSchemePage, true).success.value
-        .set(StoppedUsingServiceDatePage, today).success.value
+      "must include StopSellingGoodsSummary row with 'site.no' when StopSellingGoodsPage is false" in {
+        val answersWithStopSellingGoodsNo = answers
+          .set(StopSellingGoodsPage, false).success.value
+          .set(LeaveSchemePage, true).success.value
+          .set(StoppedUsingServiceDatePage, today).success.value
 
-      val application = applicationBuilder(userAnswers = Some(answersWithStopSellingGoodsNo))
-        .build()
+        val application = applicationBuilder(userAnswers = Some(answersWithStopSellingGoodsNo))
+          .overrides(bind[ClientDetailService].toInstance(mockClientDetailService))
+          .build()
 
-      running(application) {
-        implicit val msgs: Messages = messages(application)
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+        running(application) {
+          implicit val msgs: Messages = messages(application)
+          val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[CheckYourAnswersView]
-        val appConfig = application.injector.instanceOf[FrontendAppConfig]
-        val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
-        val list = SummaryListViewModel(
-          Seq(
-            StopSellingGoodsSummary.row(answersWithStopSellingGoodsNo, waypoints, CheckYourAnswersPage),
-            StoppedSellingGoodsDateSummary.row(answersWithStopSellingGoodsNo, waypoints, CheckYourAnswersPage, date),
-            StoppedUsingServiceDateSummary.row(answersWithStopSellingGoodsNo, waypoints, CheckYourAnswersPage, date)
-          ).flatten
-        )
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[CheckYourAnswersView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
+          val list = SummaryListViewModel(
+            Seq(
+              StopSellingGoodsSummary.row(answersWithStopSellingGoodsNo, waypoints, CheckYourAnswersPage),
+              StoppedSellingGoodsDateSummary.row(answersWithStopSellingGoodsNo, waypoints, CheckYourAnswersPage, date),
+              StoppedUsingServiceDateSummary.row(answersWithStopSellingGoodsNo, waypoints, CheckYourAnswersPage, date)
+            ).flatten
+          )
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
-          waypoints,
-          list,
-          isValid = true,
-          appConfig.iossYourAccountUrl,
-          clientName
-        )(request, msgs).toString
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            waypoints,
+            list,
+            isValid = true,
+            appConfig.iossYourAccountUrl,
+            clientName
+          )(request, msgs).toString
 
-        val stopSellingGoodsRow = StopSellingGoodsSummary.row(answersWithStopSellingGoodsNo, waypoints, CheckYourAnswersPage)
-        stopSellingGoodsRow mustBe defined
+          val stopSellingGoodsRow = StopSellingGoodsSummary.row(answersWithStopSellingGoodsNo, waypoints, CheckYourAnswersPage)
+          stopSellingGoodsRow mustBe defined
 
-        val actualValue = stopSellingGoodsRow.value.value.content.asInstanceOf[Text].value
+          val actualValue = stopSellingGoodsRow.value.value.content.asInstanceOf[Text].value
 
-        val expectedValue = msgs("site.no")
+          val expectedValue = msgs("site.no")
 
-        actualValue mustBe expectedValue
+          actualValue mustBe expectedValue
+        }
       }
-    }
 
-    "must include StoppedSellingGoodsDateSummary row in the summary list when data is present" in {
-      val testDate = LocalDate.of(2023, 12, 31)
-      val answersWithStoppedSellingGoodsDate = answers
-        .set(StoppedSellingGoodsDatePage, testDate).success.value
+      "must include StoppedSellingGoodsDateSummary row in the summary list when data is present" in {
+        val testDate = LocalDate.of(2023, 12, 31)
+        val answersWithStoppedSellingGoodsDate = answers
+          .set(StoppedSellingGoodsDatePage, testDate).success.value
 
-      val application = applicationBuilder(userAnswers = Some(answersWithStoppedSellingGoodsDate))
-        .build()
+        val application = applicationBuilder(userAnswers = Some(answersWithStoppedSellingGoodsDate))
+          .overrides(bind[ClientDetailService].toInstance(mockClientDetailService))
+          .build()
 
-      running(application) {
-        implicit val msgs: Messages = messages(application)
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+        running(application) {
+          implicit val msgs: Messages = messages(application)
+          val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[CheckYourAnswersView]
-        val appConfig = application.injector.instanceOf[FrontendAppConfig]
-        val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
-        val dates = application.injector.instanceOf[Dates]
-        val list = SummaryListViewModel(
-          Seq(
-            StopSellingGoodsSummary.row(answersWithStoppedSellingGoodsDate, waypoints, CheckYourAnswersPage),
-            StoppedSellingGoodsDateSummary.row(answersWithStoppedSellingGoodsDate, waypoints, CheckYourAnswersPage, dates),
-            StoppedUsingServiceDateSummary.row(answersWithStoppedSellingGoodsDate, waypoints, CheckYourAnswersPage, dates)
-          ).flatten
-        )
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[CheckYourAnswersView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
+          val dates = application.injector.instanceOf[Dates]
+          val list = SummaryListViewModel(
+            Seq(
+              StopSellingGoodsSummary.row(answersWithStoppedSellingGoodsDate, waypoints, CheckYourAnswersPage),
+              StoppedSellingGoodsDateSummary.row(answersWithStoppedSellingGoodsDate, waypoints, CheckYourAnswersPage, dates),
+              StoppedUsingServiceDateSummary.row(answersWithStoppedSellingGoodsDate, waypoints, CheckYourAnswersPage, dates)
+            ).flatten
+          )
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
-          waypoints,
-          list,
-          isValid = true,
-          appConfig.iossYourAccountUrl,
-          clientName
-        )(request, msgs).toString
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            waypoints,
+            list,
+            isValid = true,
+            appConfig.iossYourAccountUrl,
+            clientName
+          )(request, msgs).toString
 
-        val stoppedSellingGoodsDateRow = StoppedSellingGoodsDateSummary.row(answersWithStoppedSellingGoodsDate, waypoints, CheckYourAnswersPage, dates)
-        stoppedSellingGoodsDateRow mustBe defined
+          val stoppedSellingGoodsDateRow = StoppedSellingGoodsDateSummary.row(answersWithStoppedSellingGoodsDate, waypoints, CheckYourAnswersPage, dates)
+          stoppedSellingGoodsDateRow mustBe defined
 
-        val actualValue = stoppedSellingGoodsDateRow.value.value.content.asInstanceOf[Text].value
-        val expectedValue = dates.formatter.format(testDate)
+          val actualValue = stoppedSellingGoodsDateRow.value.value.content.asInstanceOf[Text].value
+          val expectedValue = dates.formatter.format(testDate)
 
-        actualValue mustBe expectedValue
+          actualValue mustBe expectedValue
+        }
       }
-    }
 
-    "must include StoppedUsingServiceDateSummary row in the summary list when data is present" in {
-      val testDate = LocalDate.of(2023, 12, 31)
-      val answersWithStoppedUsingServiceDate = answers
-        .set(StoppedUsingServiceDatePage, testDate).success.value
+      "must include StoppedUsingServiceDateSummary row in the summary list when data is present" in {
+        val testDate = LocalDate.of(2023, 12, 31)
+        val answersWithStoppedUsingServiceDate = answers
+          .set(StoppedUsingServiceDatePage, testDate).success.value
 
-      val application = applicationBuilder(userAnswers = Some(answersWithStoppedUsingServiceDate))
-        .build()
+        val application = applicationBuilder(userAnswers = Some(answersWithStoppedUsingServiceDate))
+          .overrides(bind[ClientDetailService].toInstance(mockClientDetailService))
+          .build()
 
-      running(application) {
-        implicit val msgs: Messages = messages(application)
-        val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
+        running(application) {
+          implicit val msgs: Messages = messages(application)
+          val request = FakeRequest(GET, routes.CheckYourAnswersController.onPageLoad().url)
 
-        val result = route(application, request).value
-        val view = application.injector.instanceOf[CheckYourAnswersView]
-        val appConfig = application.injector.instanceOf[FrontendAppConfig]
-        val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
-        val dates = application.injector.instanceOf[Dates]
-        val list = SummaryListViewModel(
-          Seq(
-            StopSellingGoodsSummary.row(answersWithStoppedUsingServiceDate, waypoints, CheckYourAnswersPage),
-            StoppedSellingGoodsDateSummary.row(answersWithStoppedUsingServiceDate, waypoints, CheckYourAnswersPage, dates),
-            StoppedUsingServiceDateSummary.row(answersWithStoppedUsingServiceDate, waypoints, CheckYourAnswersPage, dates)
-          ).flatten
-        )
+          val result = route(application, request).value
+          val view = application.injector.instanceOf[CheckYourAnswersView]
+          val appConfig = application.injector.instanceOf[FrontendAppConfig]
+          val waypoints = EmptyWaypoints.setNextWaypoint(Waypoint(CheckYourAnswersPage, CheckMode, CheckYourAnswersPage.urlFragment))
+          val dates = application.injector.instanceOf[Dates]
+          val list = SummaryListViewModel(
+            Seq(
+              StopSellingGoodsSummary.row(answersWithStoppedUsingServiceDate, waypoints, CheckYourAnswersPage),
+              StoppedSellingGoodsDateSummary.row(answersWithStoppedUsingServiceDate, waypoints, CheckYourAnswersPage, dates),
+              StoppedUsingServiceDateSummary.row(answersWithStoppedUsingServiceDate, waypoints, CheckYourAnswersPage, dates)
+            ).flatten
+          )
 
-        status(result) mustBe OK
-        contentAsString(result) mustBe view(
-          waypoints,
-          list,
-          isValid = true,
-          appConfig.iossYourAccountUrl,
-          clientName
-        )(request, msgs).toString
+          status(result) mustBe OK
+          contentAsString(result) mustBe view(
+            waypoints,
+            list,
+            isValid = true,
+            appConfig.iossYourAccountUrl,
+            clientName
+          )(request, msgs).toString
 
-        val stoppedUsingServiceDateRow = StoppedUsingServiceDateSummary.row(answersWithStoppedUsingServiceDate, waypoints, CheckYourAnswersPage, dates)
-        stoppedUsingServiceDateRow mustBe defined
+          val stoppedUsingServiceDateRow = StoppedUsingServiceDateSummary.row(answersWithStoppedUsingServiceDate, waypoints, CheckYourAnswersPage, dates)
+          stoppedUsingServiceDateRow mustBe defined
 
-        val actualValue = stoppedUsingServiceDateRow.value.value.content.asInstanceOf[Text].value
-        val expectedValue = dates.formatter.format(testDate)
+          val actualValue = stoppedUsingServiceDateRow.value.value.content.asInstanceOf[Text].value
+          val expectedValue = dates.formatter.format(testDate)
 
-        actualValue mustBe expectedValue
+          actualValue mustBe expectedValue
+        }
       }
     }
   }
@@ -257,7 +282,16 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
     "must redirect to the correct page" in {
 
-      val application = applicationBuilder(userAnswers = Some(answers)).build()
+      val mockRegistrationConnector = mock[RegistrationConnector]
+      
+      when(mockRegistrationConnector.amend(any())(any())) thenReturn
+        Future.successful(Right(()))
+
+
+      val application = applicationBuilder(userAnswers = Some(answers))
+        .overrides(bind[RegistrationConnector].toInstance(mockRegistrationConnector))
+        .overrides(bind[ClientDetailService].toInstance(mockClientDetailService))
+        .build()
 
       running(application) {
         val request = FakeRequest(POST, routes.CheckYourAnswersController.onSubmit(waypoints, incompletePrompt = false).url)

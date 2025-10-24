@@ -18,15 +18,21 @@ package controllers
 
 import base.SpecBase
 import config.FrontendAppConfig
+import connectors.RegistrationConnector
 import date.Today
+import models.requests.DataRequest
 import org.mockito.Mockito.when
 import pages.{LeaveSchemePage, StopSellingGoodsPage, StoppedSellingGoodsDatePage, StoppedUsingServiceDatePage}
 import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.ClientDetailService
+import uk.gov.hmrc.http.HeaderCarrier
 import views.html.ApplicationCompleteView
 
 import java.time.LocalDate
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
 
 class ApplicationCompleteControllerSpec extends SpecBase {
@@ -34,6 +40,13 @@ class ApplicationCompleteControllerSpec extends SpecBase {
   val today: LocalDate = LocalDate.of(2024, 1, 25)
   val mockToday: Today = mock[Today]
   when(mockToday.date).thenReturn(today)
+
+  private val mockRegistrationConnector: RegistrationConnector = mock[RegistrationConnector]
+
+  private val mockClientDetailService: ClientDetailService = new ClientDetailService(mockRegistrationConnector) {
+    override def getClientName(implicit request: DataRequest[_], hc: HeaderCarrier): Future[String] =
+      Future.successful(clientName)
+  }
 
   "ApplicationComplete Controller" - {
 
@@ -49,7 +62,10 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           .set(StoppedSellingGoodsDatePage, stoppedSellingGoodsDate).success.get
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[Today].toInstance(mockToday))
+          .overrides(
+            bind[Today].toInstance(mockToday),
+            bind[ClientDetailService].toInstance(mockClientDetailService)
+          )
           .build()
 
         running(application) {
@@ -62,12 +78,14 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
-          val maxChangeDate = "31 January 2024"
+          val maxChangeDate = "1 February 2024"
+          val vatReturnDate = "January 2024"
 
           contentAsString(result) mustEqual view(
             config.iossYourAccountUrl,
             clientName,
-            maxChangeDate
+            maxChangeDate,
+            vatReturnDate
           )(request, messages(application)).toString
         }
       }
@@ -82,7 +100,10 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           .set(StoppedSellingGoodsDatePage, stoppedSellingGoodsDate).success.get
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[Today].toInstance(mockToday))
+          .overrides(
+            bind[Today].toInstance(mockToday),
+            bind[ClientDetailService].toInstance(mockClientDetailService)
+          )
           .build()
 
         running(application) {
@@ -95,12 +116,14 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
-          val maxChangeDate = "31 January 2024"
+          val maxChangeDate = "1 February 2024"
+          val vatReturnDate = "January 2024"
 
           contentAsString(result) mustEqual view(
             config.iossYourAccountUrl,
             clientName,
-            maxChangeDate
+            maxChangeDate,
+            vatReturnDate
           )(request, messages(application)).toString
         }
       }
@@ -119,7 +142,10 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           .set(StoppedUsingServiceDatePage, stoppedUsingServiceDate).success.get
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[Today].toInstance(mockToday))
+          .overrides(
+            bind[Today].toInstance(mockToday),
+            bind[ClientDetailService].toInstance(mockClientDetailService)
+          )
           .build()
 
         running(application) {
@@ -132,8 +158,14 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
-          val maxChangeDate = "31 January 2024"
-          contentAsString(result) mustEqual view(config.iossYourAccountUrl, clientName, maxChangeDate)(request, messages(application)).toString
+          val maxChangeDate = "1 February 2024"
+          val vatReturnDate = "January 2024"
+          contentAsString(result) mustEqual view(
+            config.iossYourAccountUrl,
+            clientName,
+            maxChangeDate,
+            vatReturnDate
+          )(request, messages(application)).toString
         }
       }
 
@@ -148,7 +180,10 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           .set(StoppedUsingServiceDatePage, stoppedUsingServiceDate).success.get
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
-          .overrides(bind[Today].toInstance(mockToday))
+          .overrides(
+            bind[Today].toInstance(mockToday),
+            bind[ClientDetailService].toInstance(mockClientDetailService)
+          )
           .build()
 
         running(application) {
@@ -161,8 +196,14 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           val config = application.injector.instanceOf[FrontendAppConfig]
 
           status(result) mustEqual OK
-          val maxChangeDate = "29 February 2024"
-          contentAsString(result) mustEqual view(config.iossYourAccountUrl, clientName, maxChangeDate)(request, messages(application)).toString
+          val maxChangeDate = "1 March 2024"
+          val vatReturnDate = "February 2024"
+          contentAsString(result) mustEqual view(
+            config.iossYourAccountUrl,
+            clientName,
+            maxChangeDate,
+            vatReturnDate
+          )(request, messages(application)).toString
         }
       }
     }
