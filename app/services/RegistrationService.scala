@@ -19,19 +19,55 @@ package services
 import connectors.RegistrationConnector
 import connectors.RegistrationConnectorHttpParser.AmendRegistrationResultResponse
 import models.UserAnswers
+import models.audit.{ExclusionAuditModel, ExclusionAuditType, SubmissionResult}
 import models.etmp.EtmpExclusionReason.*
 import models.etmp.EtmpMessageType.IOSSIntAmendClient
 import models.etmp.*
 import models.etmp.amend.{EtmpAmendCustomerIdentification, EtmpAmendRegistrationChangeLog, EtmpAmendRegistrationRequest, EtmpExclusionDetails}
 import models.etmp.display.{EtmpDisplayEuRegistrationDetails, EtmpDisplayRegistration, EtmpDisplaySchemeDetails}
 import pages.{StoppedSellingGoodsDatePage, StoppedUsingServiceDatePage}
+import play.api.mvc.Request
 import uk.gov.hmrc.http.HeaderCarrier
 
 import java.time.{Clock, LocalDate}
 import javax.inject.Inject
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.Success
 
-class RegistrationService @Inject()(clock: Clock, registrationConnector: RegistrationConnector) {
+class RegistrationService @Inject()(
+                                     clock: Clock,
+                                     registrationConnector: RegistrationConnector,
+                                     auditService: AuditService
+                                   )(implicit ec: ExecutionContext) {
+
+  def amendRegistrationAndAudit(
+                               userId: String,
+                               iossNumber: String,
+                               userAnswers: UserAnswers,
+                               displayNetpRegistration: EtmpDisplayRegistration,
+                               intermediaryNumber: String,
+                               exclusionReason: Option[EtmpExclusionReason],
+                               exclusionAuditType: ExclusionAuditType
+                               )(implicit hc: HeaderCarrier, request: Request[_]): Future[AmendRegistrationResultResponse] =
+    
+    val success: ExclusionAuditModel = ExclusionAuditModel(
+      exclusionAuditType = exclusionAuditType,
+      userId = userId,
+      userAgent = request.headers.get("user-agent").getOrElse(""),
+      userAnswers = userAnswers,
+      iossNumber = iossNumber,
+      displayNetpRegistration = displayNetpRegistration,
+      intermediaryNumber = intermediaryNumber,
+      exclusionReason = exclusionReason,
+      submissionResult = SubmissionResult.Success
+    )
+    val failure: ExclusionAuditModel = success.copy(submissionResult = SubmissionResult.Failure)
+
+    amendRegistration(userAnswers, exclusionReason, iossNumber, displayNetpRegistration).andThen {
+      case Success(Right(_)) => auditService.audit(success)(hc, request)
+      case _ => auditService.audit(failure)(hc, request)
+    }
+
 
   def amendRegistration(
                          answers: UserAnswers,
@@ -39,7 +75,6 @@ class RegistrationService @Inject()(clock: Clock, registrationConnector: Registr
                          iossNumber: String,
                          registration: EtmpDisplayRegistration
                        )(implicit hc: HeaderCarrier): Future[AmendRegistrationResultResponse] = {
-
     registrationConnector.amend(buildEtmpAmendRegistrationRequest(
       answers, exclusionReason, registration, iossNumber
     ))
