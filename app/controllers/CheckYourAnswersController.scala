@@ -21,6 +21,7 @@ import config.FrontendAppConfig
 import controllers.actions.AuthenticatedControllerComponents
 import date.Dates
 import logging.Logging
+import models.audit.ExclusionAuditType
 import models.etmp.EtmpExclusionReason
 import models.{CheckMode, UserAnswers}
 import pages.{CheckYourAnswersPage, EmptyWaypoints, LeaveSchemePage, StopSellingGoodsPage, Waypoint, Waypoints}
@@ -87,11 +88,14 @@ class CheckYourAnswersController @Inject()(
 
           val exclusionReason = determineExclusionReason(request.userAnswers)
 
-          registrationService.amendRegistration(
-            answers = request.userAnswers,
-            exclusionReason = Some(exclusionReason),
+          registrationService.amendRegistrationAndAudit(
+            userId = request.userId,
             iossNumber = request.iossNumber,
-            registration = request.displayNetpRegistration
+            userAnswers = request.userAnswers,
+            displayNetpRegistration = request.displayNetpRegistration,
+            intermediaryNumber = request.intermediaryNumber,
+            exclusionReason = Some(exclusionReason),
+            exclusionAuditType = ExclusionAuditType.ExclusionRequestSubmitted
           ).map {
             case Right(_) =>
               Redirect(CheckYourAnswersPage.navigate(waypoints, request.userAnswers, request.userAnswers).route)
