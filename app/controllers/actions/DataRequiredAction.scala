@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ class DataRequiredActionImpl @Inject()(registrationConnector: RegistrationConnec
 
         implicit val hc: HeaderCarrier = HeaderCarrierConverter.fromRequestAndSession(request.request, request.session)
 
-        registrationConnector.displayRegistration(iossNumber)(hc).flatMap {
+        registrationConnector.displayNetpRegistration(iossNumber)(hc).flatMap {
           case Left(error: ErrorResponse) =>
             val msg = s"Failed to retrieve registration: ${error.body}"
             logger.error(msg)

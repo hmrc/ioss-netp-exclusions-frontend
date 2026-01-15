@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,23 +25,27 @@ import org.mockito.ArgumentMatchers.{any, eq as eqTo}
 import org.mockito.Mockito.{reset, when}
 import org.scalatest.BeforeAndAfterEach
 import org.scalatestplus.mockito.MockitoSugar.mock
-import play.api.mvc.Results.InternalServerError
+import pages.CannotUseClientExcludedOrNotClientPage
+import play.api.mvc.Results.{InternalServerError, Redirect}
 import testutils.RegistrationData.etmpDisplayRegistration
 import uk.gov.hmrc.http.HeaderCarrier
+import utils.FutureSyntax.FutureOps
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{ExecutionContext, Future}
-
 
 class ClientDetailServiceSpec extends SpecBase with BeforeAndAfterEach {
 
   private implicit val hc: HeaderCarrier = HeaderCarrier()
-  private implicit val ec: ExecutionContext = scala.concurrent.ExecutionContext.global
 
   private val mockRegistrationConnector: RegistrationConnector = mock[RegistrationConnector]
   private val clientDetailService = new ClientDetailService(mockRegistrationConnector)()
 
   private val otherClientName = "Gordons Alive"
   private val otherIossNumber = "IM9000000000"
+
+  private val etmpDisplayIntermediaryRegistration: EtmpDisplayIntermediaryRegistration = arbitraryEtmpDisplayIntermediaryRegistration.arbitrary.sample.value
+  private val intermediaryRegistrationWrapper: IntermediaryRegistrationWrapper = IntermediaryRegistrationWrapper(etmpDisplayIntermediaryRegistration)
 
   override def beforeEach(): Unit = {
     reset(mockRegistrationConnector)
@@ -152,5 +156,53 @@ class ClientDetailServiceSpec extends SpecBase with BeforeAndAfterEach {
       result mustBe "Unknown client"
     }
 
+  }
+
+  ".checkIntermediaryHasClient" - {
+
+    "must return None when the NETP belongs to the Intermediary" in {
+
+      val nonExcludedClient: EtmpClientDetails = EtmpClientDetails("Excluded Client", iossNumber, false)
+      val updatedIntermediaryRegistrationWrapper: IntermediaryRegistrationWrapper = intermediaryRegistrationWrapper
+        .copy(etmpDisplayRegistration = etmpDisplayIntermediaryRegistration.copy(
+          clientDetails = etmpDisplayIntermediaryRegistration.clientDetails :+ nonExcludedClient
+        ))
+
+      when(mockRegistrationConnector.displayIntermediaryRegistration(any())(any())) thenReturn Right(updatedIntermediaryRegistrationWrapper).toFuture
+
+      val service = new ClientDetailService(mockRegistrationConnector)
+
+      val result = service.checkIntermediaryHasClient(intermediaryNumber, nonExcludedClient.clientIossID).futureValue
+
+      result must not be defined
+    }
+
+    "must redirect to the Cannot Use Client Excluded Or Not Client page when client does not belong to Intermediary" in {
+
+      when(mockRegistrationConnector.displayIntermediaryRegistration(any())(any())) thenReturn Right(intermediaryRegistrationWrapper).toFuture
+
+      val service = new ClientDetailService(mockRegistrationConnector)
+
+      val result = service.checkIntermediaryHasClient(intermediaryNumber, otherIossNumber).futureValue
+
+      result `mustBe` Some(Redirect(CannotUseClientExcludedOrNotClientPage.route(waypoints)))
+    }
+
+    "must redirect to the Cannot Use Client Excluded Or Not Client page when the client is excluded" in {
+
+      val excludedClient: EtmpClientDetails = EtmpClientDetails("Excluded Client", otherIossNumber, true)
+      val updatedIntermediaryRegistrationWrapper: IntermediaryRegistrationWrapper = intermediaryRegistrationWrapper
+        .copy(etmpDisplayRegistration = etmpDisplayIntermediaryRegistration.copy(
+          clientDetails = etmpDisplayIntermediaryRegistration.clientDetails :+ excludedClient
+        ))
+
+      when(mockRegistrationConnector.displayIntermediaryRegistration(any())(any())) thenReturn Right(updatedIntermediaryRegistrationWrapper).toFuture
+
+      val service = new ClientDetailService(mockRegistrationConnector)
+
+      val result = service.checkIntermediaryHasClient(intermediaryNumber, excludedClient.clientIossID).futureValue
+
+      result `mustBe` Some(Redirect(CannotUseClientExcludedOrNotClientPage.route(waypoints)))
+    }
   }
 }

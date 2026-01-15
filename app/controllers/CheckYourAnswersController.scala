@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import services.{ClientDetailService, RegistrationService}
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.CompletionChecks
-import viewmodels.govuk.summarylist.*
-import views.html.CheckYourAnswersView
 import utils.FutureSyntax.FutureOps
 import viewmodels.checkAnswers.{StopSellingGoodsSummary, StoppedSellingGoodsDateSummary, StoppedUsingServiceDateSummary}
+import viewmodels.govuk.summarylist.*
+import views.html.CheckYourAnswersView
 
 import scala.concurrent.ExecutionContext
 
@@ -50,7 +50,7 @@ class CheckYourAnswersController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(): Action[AnyContent] = cc.identifyAndGetData.async {
+  def onPageLoad(): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
     implicit request =>
 
       for {
@@ -76,8 +76,9 @@ class CheckYourAnswersController @Inject()(
       }
   }
 
-  def onSubmit(waypoints: Waypoints, incompletePrompt: Boolean): Action[AnyContent] = cc.identifyAndGetData.async {
+  def onSubmit(waypoints: Waypoints, incompletePrompt: Boolean): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
     implicit request =>
+
       getFirstValidationErrorRedirect(waypoints) match {
         case Some(errorRedirect) => if (incompletePrompt) {
           errorRedirect.toFuture

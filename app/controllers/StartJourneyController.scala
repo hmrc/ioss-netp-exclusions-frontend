@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,26 +16,27 @@
 
 package controllers
 
-import controllers.actions.{DataRetrievalAction, IdentifierAction}
+import controllers.actions.AuthenticatedControllerComponents
 import models.UserAnswers
 import pages.EmptyWaypoints
 import play.api.i18n.I18nSupport
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
 import queries.IossNumberQuery
-import repositories.SessionRepository
+import services.ClientDetailService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 
 import javax.inject.Inject
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 
 class StartJourneyController @Inject()(
-                                        sessionRepository: SessionRepository,
-                                        identify: IdentifierAction,
-                                        getData: DataRetrievalAction,
-                                        val controllerComponents: MessagesControllerComponents,
-                               )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                        cc: AuthenticatedControllerComponents,
+                                        clientDetailService: ClientDetailService
+                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad(iossNumber: String): Action[AnyContent] = (identify andThen getData).async {
+  protected val controllerComponents: MessagesControllerComponents = cc
+
+  def onPageLoad(iossNumber: String): Action[AnyContent] = cc.identifyAndGetOptionalData.async {
     implicit request =>
 
       val originalAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
@@ -43,12 +44,19 @@ class StartJourneyController @Inject()(
 
       updatedAnswersTry match {
         case scala.util.Success(updatedAnswers) =>
-          sessionRepository.set(updatedAnswers).map { _ =>
-            Redirect(routes.StopSellingGoodsController.onPageLoad(EmptyWaypoints))
+          val iossNumber: String = updatedAnswers.get(IossNumberQuery).getOrElse(throw new Exception("IOSS number can't be retrieved from user answers"))
+          clientDetailService.checkIntermediaryHasClient(request.intermediaryNumber, iossNumber).flatMap {
+            case None =>
+              cc.sessionRepository.set(updatedAnswers).map { _ =>
+                Redirect(routes.StopSellingGoodsController.onPageLoad(EmptyWaypoints))
+              }
+
+            case Some(result) =>
+              result.toFuture
           }
 
         case scala.util.Failure(_) =>
-          Future.successful(InternalServerError("Could not set IOSS number in session"))
+          InternalServerError("Could not set IOSS number in session").toFuture
       }
   }
 }

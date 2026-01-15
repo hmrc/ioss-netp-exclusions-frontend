@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,9 @@ import connectors.RegistrationConnector
 import logging.Logging
 import models.etmp.EtmpClientDetails
 import models.requests.DataRequest
+import pages.{CannotUseClientExcludedOrNotClientPage, EmptyWaypoints}
+import play.api.mvc.Result
+import play.api.mvc.Results.Redirect
 import uk.gov.hmrc.http.HeaderCarrier
 
 import javax.inject.Inject
@@ -46,6 +49,15 @@ class ClientDetailService @Inject()(registrationConnector: RegistrationConnector
       case e: Throwable =>
         logger.error(s"Unexpected failure while fetching client details for intermediary: $intermediaryNumber", e)
         Seq.empty[EtmpClientDetails]
+    }
+  }
+
+  def checkIntermediaryHasClient(intermediaryNumber: String, iossNumber: String)(implicit hc: HeaderCarrier): Future[Option[Result]] = {
+    getClientDetails(intermediaryNumber).map(_.exists(cd => cd.clientIossID == iossNumber && !cd.clientExcluded)).map {
+      case false =>
+        Some(Redirect(CannotUseClientExcludedOrNotClientPage.route(EmptyWaypoints)))
+      case true =>
+        None
     }
   }
 }

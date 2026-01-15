@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,35 +21,32 @@ import controllers.actions.*
 import date.Dates
 import models.requests.DataRequest
 import pages.{StopSellingGoodsPage, StoppedSellingGoodsDatePage, StoppedUsingServiceDatePage}
-
-import javax.inject.Inject
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents, Result}
 import services.ClientDetailService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ApplicationCompleteView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
-
 class ApplicationCompleteController @Inject()(
-                                        override val messagesApi: MessagesApi,
-                                        identify: IdentifierAction,
-                                        getData: DataRetrievalAction,
-                                        requireData: DataRequiredAction,
-                                        val controllerComponents: MessagesControllerComponents,
-                                        view: ApplicationCompleteView,
-                                        config: FrontendAppConfig,
-                                        dates: Dates,
-                                        clientDetailService: ClientDetailService
-                                    )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                               override val messagesApi: MessagesApi,
+                                               cc: AuthenticatedControllerComponents,
+                                               view: ApplicationCompleteView,
+                                               config: FrontendAppConfig,
+                                               dates: Dates,
+                                               clientDetailService: ClientDetailService
+                                             )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad: Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  protected val controllerComponents: MessagesControllerComponents = cc
+
+  def onPageLoad: Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
     implicit request =>
       request.userAnswers.get(StopSellingGoodsPage) match {
-        case Some(true)  => onStopSellingGoods()
+        case Some(true) => onStopSellingGoods()
         case Some(false) => onStopUsingService()
-        case None        => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
+        case None => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
   }
 

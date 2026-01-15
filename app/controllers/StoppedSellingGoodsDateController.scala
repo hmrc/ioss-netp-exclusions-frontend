@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,36 +19,34 @@ package controllers
 import controllers.actions.*
 import date.Dates
 import forms.StoppedSellingGoodsDateFormProvider
-
-import javax.inject.Inject
 import pages.{StoppedSellingGoodsDatePage, Waypoints}
+import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.StoppedSellingGoodsDateView
 
 import java.time.LocalDate
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class StoppedSellingGoodsDateController @Inject()(
-                                        override val messagesApi: MessagesApi,
-                                        sessionRepository: SessionRepository,
-                                        identify: IdentifierAction,
-                                        getData: DataRetrievalAction,
-                                        requireData: DataRequiredAction,
-                                        dates: Dates,
-                                        formProvider: StoppedSellingGoodsDateFormProvider,
-                                        val controllerComponents: MessagesControllerComponents,
-                                        view: StoppedSellingGoodsDateView
-                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
-  
+                                                   override val messagesApi: MessagesApi,
+                                                   cc: AuthenticatedControllerComponents,
+                                                   dates: Dates,
+                                                   formProvider: StoppedSellingGoodsDateFormProvider,
+                                                   view: StoppedSellingGoodsDateView
+                                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = (identify andThen getData andThen requireData) {
+  protected val controllerComponents: MessagesControllerComponents = cc
+
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient {
     implicit request =>
 
       val commencementDate = LocalDate.parse("2025-06-03") //todo get schemeDetails from registrationConnector for commencement date when viewReg is implemented
-      val form = formProvider(dates.today.date, commencementDate)
+
+      val form: Form[LocalDate] = formProvider(dates.today.date, commencementDate)
       val preparedForm = request.userAnswers.get(StoppedSellingGoodsDatePage) match {
         case None => form
         case Some(value) => form.fill(value)
@@ -57,20 +55,21 @@ class StoppedSellingGoodsDateController @Inject()(
       Ok(view(preparedForm, dates.dateHint, waypoints))
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = (identify andThen getData andThen requireData).async {
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
     implicit request =>
 
       val commencementDate = LocalDate.parse("2025-06-03") //todo get schemeDetails from registrationConnector for commencement date when viewReg is implemented
-      val form = formProvider(dates.today.date, commencementDate)
-      
+
+      val form: Form[LocalDate] = formProvider(dates.today.date, commencementDate)
+
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, dates.dateHint, waypoints))),
+          BadRequest(view(formWithErrors, dates.dateHint, waypoints)).toFuture,
 
         value =>
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(StoppedSellingGoodsDatePage, value))
-            _              <- sessionRepository.set(updatedAnswers)
+            _ <- cc.sessionRepository.set(updatedAnswers)
           } yield Redirect(StoppedSellingGoodsDatePage.navigate(waypoints, updatedAnswers, updatedAnswers).url)
       )
   }

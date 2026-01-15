@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package generators
 import models.{Bic, Country, CountryWithValidationDetails, Iban, IntermediaryDetails}
 import models.etmp.*
 import models.etmp.amend.EtmpAmendRegistrationChangeLog
-import models.etmp.display.{EtmpDisplayCustomerIdentification, EtmpDisplayEuRegistrationDetails, EtmpDisplayRegistration, EtmpDisplaySchemeDetails}
+import models.etmp.display.{EtmpDisplayCustomerIdentification, EtmpDisplayEuRegistrationDetails, EtmpDisplayIntermediaryRegistration, EtmpDisplayRegistration, EtmpDisplaySchemeDetails}
 import org.scalacheck.Arbitrary.arbitrary
 import org.scalacheck.{Arbitrary, Gen}
 import uk.gov.hmrc.domain.Vrn
@@ -445,6 +445,18 @@ trait ModelGenerators {
           schemeDetails = schemeDetails,
           exclusions = exclusions,
           adminUse = adminUse
+        )
+      }
+    }
+  }
+  
+  implicit lazy val arbitraryEtmpDisplayIntermediaryRegistration: Arbitrary[EtmpDisplayIntermediaryRegistration] = {
+    Arbitrary {
+      for {
+        clientDetails <- Gen.listOfN(3, arbitraryEtmpClientDetails.arbitrary)
+      } yield {
+        EtmpDisplayIntermediaryRegistration(
+          clientDetails = clientDetails
         )
       }
     }

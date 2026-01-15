@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ package controllers.actions
 import models.requests.{DataRequest, OptionalDataRequest}
 import play.api.http.FileMimeTypes
 import play.api.i18n.{Langs, MessagesApi}
-import play.api.mvc.{ActionBuilder, AnyContent, DefaultActionBuilder, MessagesActionBuilder, MessagesControllerComponents, PlayBodyParsers}
+import play.api.mvc.*
 import repositories.SessionRepository
 
 import javax.inject.Inject
@@ -37,17 +37,25 @@ trait AuthenticatedControllerComponents extends MessagesControllerComponents {
 
   def requireData: DataRequiredAction
 
-  def identifyAndGetData: ActionBuilder[DataRequest, AnyContent] =
+  def checkIntermediaryClient: CheckIntermediaryClientFilterProvider
+
+  def identifyAndGetData: ActionBuilder[DataRequest, AnyContent] = {
     actionBuilder andThen
       identify andThen
       getData andThen
       requireData
+  }
 
-  def identifyAndGetOptionalData: ActionBuilder[OptionalDataRequest, AnyContent] =
+  def identifyAndGetOptionalData: ActionBuilder[OptionalDataRequest, AnyContent] = {
     actionBuilder andThen
       identify andThen
       getData
+  }
 
+  def identifyAndGetDataAndCheckIntermediaryClient: ActionBuilder[DataRequest, AnyContent] = {
+    identifyAndGetData andThen
+      checkIntermediaryClient()
+  }
 }
 
 case class DefaultAuthenticatedControllerComponents @Inject()(
@@ -61,5 +69,6 @@ case class DefaultAuthenticatedControllerComponents @Inject()(
                                                                sessionRepository: SessionRepository,
                                                                identify: IdentifierAction,
                                                                getData: DataRetrievalAction,
-                                                               requireData: DataRequiredAction
+                                                               requireData: DataRequiredAction,
+                                                               checkIntermediaryClient: CheckIntermediaryClientFilterProvider
                                                              ) extends AuthenticatedControllerComponents
