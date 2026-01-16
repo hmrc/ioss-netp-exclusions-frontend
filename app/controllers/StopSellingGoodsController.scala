@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,35 +18,32 @@ package controllers
 
 import controllers.actions.*
 import forms.StopSellingGoodsFormProvider
-import models.UserAnswers
-
-import javax.inject.Inject
 import pages.{StopSellingGoodsPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
-import repositories.SessionRepository
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
+import utils.FutureSyntax.FutureOps
 import views.html.StopSellingGoodsView
 
+import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
 class StopSellingGoodsController @Inject()(
-                                         override val messagesApi: MessagesApi,
-                                         sessionRepository: SessionRepository,
-                                         identify: IdentifierAction,
-                                         getData: DataRetrievalAction,
-                                         formProvider: StopSellingGoodsFormProvider,
-                                         val controllerComponents: MessagesControllerComponents,
-                                         view: StopSellingGoodsView
-                                 )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+                                            override val messagesApi: MessagesApi,
+                                            cc: AuthenticatedControllerComponents,
+                                            formProvider: StopSellingGoodsFormProvider,
+                                            view: StopSellingGoodsView
+                                          )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
+
+  protected val controllerComponents: MessagesControllerComponents = cc
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = (identify andThen getData) {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient {
     implicit request =>
 
-      val preparedForm = request.userAnswers.getOrElse(UserAnswers(request.userId)).get(StopSellingGoodsPage) match {
+      val preparedForm = request.userAnswers.get(StopSellingGoodsPage) match {
         case None => form
         case Some(value) => form.fill(value)
       }
@@ -54,19 +51,18 @@ class StopSellingGoodsController @Inject()(
       Ok(view(preparedForm, waypoints))
   }
 
-  def onSubmit(waypoints: Waypoints): Action[AnyContent] = (identify andThen getData).async {
+  def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
     implicit request =>
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          Future.successful(BadRequest(view(formWithErrors, waypoints))),
+          BadRequest(view(formWithErrors, waypoints)).toFuture,
 
         value =>
-          val originalAnswers: UserAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
           for {
-            updatedAnswers <- Future.fromTry(originalAnswers.set(StopSellingGoodsPage, value))
-            _              <- sessionRepository.set(updatedAnswers)
-          } yield Redirect(StopSellingGoodsPage.navigate(waypoints, originalAnswers, updatedAnswers).route)
+            updatedAnswers <- Future.fromTry(request.userAnswers.set(StopSellingGoodsPage, value))
+            _ <- cc.sessionRepository.set(updatedAnswers)
+          } yield Redirect(StopSellingGoodsPage.navigate(waypoints, request.userAnswers, updatedAnswers).route)
       )
   }
 }

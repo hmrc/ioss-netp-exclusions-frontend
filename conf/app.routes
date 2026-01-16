@@ -36,3 +36,5 @@ POST        /exclusions-stopped-using-service-date       controllers.StoppedUsin
 GET         /client-exclusions-request-received          controllers.ApplicationCompleteController.onPageLoad()
 
 GET         /submission-failure                          controllers.SubmissionFailureController.onPageLoad()
+
+GET        /cannot-use-client-excluded-or-not-client     controllers.CannotUseClientExcludedOrNotClientController.onPageLoad()

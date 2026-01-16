@@ -107,3 +107,6 @@ submissionFailure.heading = We have not received your request to remove {0} from
 submissionFailure.tryAgainLater = Please try again later.
 submissionFailure.contactUs = If the problem continues, you can email us at <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a>
 submissionFailure.next.info.returnToAccount = Back to your account
+
+cannotUseClientExcludedOrNotClient.title = You cannot access this page
+cannotUseClientExcludedOrNotClient.heading = You cannot access this page

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,8 +58,9 @@ trait SpecBase
 
   lazy val fakeRequest: FakeRequest[AnyContentAsEmpty.type] =
     FakeRequest("", "/endpoint").withCSRFToken.asInstanceOf[FakeRequest[AnyContentAsEmpty.type]]
-    
-  def emptyUserAnswers : UserAnswers = UserAnswers(userAnswersId)
+
+  def emptyUserAnswers: UserAnswers = UserAnswers(userAnswersId)
+
   val emptyUserAnswersWithIossNumber: UserAnswers = emptyUserAnswers.set(IossNumberQuery, iossNumber).success.value
 
   val arbitraryDate: LocalDate = datesBetween(LocalDate.of(2023, 3, 1), LocalDate.of(2025, 12, 31)).sample.value
@@ -69,14 +70,18 @@ trait SpecBase
 
   def messages(app: Application): Messages = app.injector.instanceOf[MessagesApi].preferred(FakeRequest())
 
-  protected def applicationBuilder(userAnswers: Option[UserAnswers] = None): GuiceApplicationBuilder =
+  protected def applicationBuilder(
+                                    userAnswers: Option[UserAnswers] = None
+                                  ): GuiceApplicationBuilder = {
     new GuiceApplicationBuilder()
       .overrides(
         bind[IdentifierAction].to[FakeIdentifierAction],
         bind[DataRetrievalAction].toInstance(new FakeDataRetrievalAction(userAnswers)),
+        bind[CheckIntermediaryClientFilterProvider].toInstance(new FakeCheckIntermediaryClientFilterProvider()),
         bind[DataRequiredAction].toInstance(new FakeDataRequiredAction(
           userAnswers = userAnswers,
           displayNetpRegistration = etmpDisplayRegistration
         )(scala.concurrent.ExecutionContext.global))
       )
+  }
 }

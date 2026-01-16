@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 HM Revenue & Customs
+ * Copyright 2026 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import play.api.data.Form
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import views.html.StopSellingGoodsView
-
 
 class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
 
@@ -106,22 +105,6 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
 
         status(result) mustEqual BAD_REQUEST
         contentAsString(result) mustEqual view(boundForm, waypoints)(request, messages(application)).toString
-      }
-    }
-
-    "must return OK with default data if no existing data is found" in {
-
-      val application = applicationBuilder(userAnswers = None).build()
-
-      running(application) {
-        val request = FakeRequest(GET, stopSellingGoodsRoute)
-
-        val result = route(application, request).value
-
-        val view = application.injector.instanceOf[StopSellingGoodsView]
-
-        status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints)(request, messages(application)).toString
       }
     }
   }
