@@ -430,7 +430,6 @@ trait ModelGenerators {
       for {
         customerIdentification <- arbitraryEtmpDisplayCustomerIdentification.arbitrary
         tradingNames <- Gen.listOfN(3, arbitraryEtmpTradingName.arbitrary)
-        clientDetails <- Gen.listOfN(3, arbitraryEtmpClientDetails.arbitrary)
         otherAddress <- arbitraryEtmpOtherAddress.arbitrary
         schemeDetails <- arbitraryEtmpDisplaySchemeDetails.arbitrary
         exclusions <- Gen.listOfN(1, arbitraryEtmpExclusion.arbitrary)
@@ -440,7 +439,6 @@ trait ModelGenerators {
         EtmpDisplayRegistration(
           customerIdentification = customerIdentification,
           tradingNames = tradingNames,
-          clientDetails = clientDetails,
           otherAddress = Some(otherAddress),
           schemeDetails = schemeDetails,
           exclusions = exclusions,

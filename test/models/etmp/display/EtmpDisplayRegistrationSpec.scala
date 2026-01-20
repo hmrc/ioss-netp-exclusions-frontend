@@ -33,7 +33,6 @@ class EtmpDisplayRegistrationSpec extends SpecBase {
         "tradingNames" -> etmpDisplayRegistration.tradingNames,
         "otherAddress" -> etmpDisplayRegistration.otherAddress,
         "customerIdentification" -> etmpDisplayRegistration.customerIdentification,
-        "clientDetails" -> etmpDisplayRegistration.clientDetails,
         "adminUse" -> etmpDisplayRegistration.adminUse
       )
 
@@ -43,7 +42,6 @@ class EtmpDisplayRegistrationSpec extends SpecBase {
         tradingNames = etmpDisplayRegistration.tradingNames,
         otherAddress = etmpDisplayRegistration.otherAddress,
         customerIdentification = etmpDisplayRegistration.customerIdentification,
-        clientDetails = etmpDisplayRegistration.clientDetails,
         adminUse = etmpDisplayRegistration.adminUse
       )
 
@@ -55,7 +53,6 @@ class EtmpDisplayRegistrationSpec extends SpecBase {
       val fromEtmpDisplayRegistration = EtmpDisplayRegistration(
         customerIdentification = etmpDisplayRegistration.customerIdentification,
         tradingNames = etmpDisplayRegistration.tradingNames,
-        clientDetails = etmpDisplayRegistration.clientDetails,
         otherAddress = etmpDisplayRegistration.otherAddress,
         schemeDetails = etmpDisplayRegistration.schemeDetails,
         exclusions = etmpDisplayRegistration.exclusions,
@@ -65,7 +62,6 @@ class EtmpDisplayRegistrationSpec extends SpecBase {
       val expectedResult = Json.obj(
         "customerIdentification" -> etmpDisplayRegistration.customerIdentification,
         "tradingNames" -> etmpDisplayRegistration.tradingNames,
-        "clientDetails" -> etmpDisplayRegistration.clientDetails,
         "otherAddress" -> etmpDisplayRegistration.otherAddress,
         "schemeDetails" -> etmpDisplayRegistration.schemeDetails,
         "exclusions" -> etmpDisplayRegistration.exclusions,
