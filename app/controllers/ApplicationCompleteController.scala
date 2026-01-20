@@ -41,7 +41,7 @@ class ApplicationCompleteController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad: Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
+  def onPageLoad: Action[AnyContent] = cc.identifyAndGetData.async {
     implicit request =>
       request.userAnswers.get(StopSellingGoodsPage) match {
         case Some(true) => onStopSellingGoods()
