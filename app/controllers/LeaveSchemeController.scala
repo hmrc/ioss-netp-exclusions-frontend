@@ -23,6 +23,7 @@ import pages.{LeaveSchemePage, StoppedUsingServiceDatePage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.ClientDetailService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.LeaveSchemeView
@@ -35,14 +36,15 @@ class LeaveSchemeController @Inject()(
                                        cc: AuthenticatedControllerComponents,
                                        formProvider: LeaveSchemeFormProvider,
                                        config: FrontendAppConfig,
-                                       view: LeaveSchemeView
+                                       view: LeaveSchemeView,
+                                       clientDetailService: ClientDetailService
                                      )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
   val form: Form[Boolean] = formProvider()
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
     implicit request =>
 
       val preparedForm = request.userAnswers.get(LeaveSchemePage) match {
@@ -50,7 +52,9 @@ class LeaveSchemeController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints))
+      clientDetailService.getClientName.map { clientName =>
+        Ok(view(preparedForm, waypoints, clientName))
+      }
   }
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
@@ -58,8 +62,9 @@ class LeaveSchemeController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints)).toFuture,
-
+          clientDetailService.getClientName.map { clientName =>
+            BadRequest(view(formWithErrors, waypoints, clientName))
+          },
         value =>
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(LeaveSchemePage, value))

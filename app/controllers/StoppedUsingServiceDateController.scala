@@ -23,6 +23,7 @@ import pages.{StoppedUsingServiceDatePage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.ClientDetailService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import utils.FutureSyntax.FutureOps
 import views.html.StoppedUsingServiceDateView
@@ -36,12 +37,13 @@ class StoppedUsingServiceDateController @Inject()(
                                                    cc: AuthenticatedControllerComponents,
                                                    formProvider: StoppedUsingServiceDateFormProvider,
                                                    view: StoppedUsingServiceDateView,
-                                                   dates: Dates
+                                                   dates: Dates,
+                                                   clientDetailService: ClientDetailService
                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
     implicit request =>
 
       val commencementDate = LocalDate.parse("2025-06-03") //todo get schemeDetails from registrationConnector for commencement date when viewReg is implemented
@@ -53,7 +55,9 @@ class StoppedUsingServiceDateController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, waypoints, dates.dateHint))
+      clientDetailService.getClientName.map { clientName =>
+        Ok(view(preparedForm, waypoints, dates.dateHint, clientName))
+      }
   }
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
@@ -65,7 +69,9 @@ class StoppedUsingServiceDateController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, waypoints, dates.dateHint)).toFuture,
+          clientDetailService.getClientName.map { clientName =>
+            BadRequest(view(formWithErrors, waypoints, dates.dateHint, clientName))
+          },
 
         value =>
           for {
