@@ -31,7 +31,9 @@ import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
+import services.ClientDetailService
 import views.html.StoppedUsingServiceDateView
+import utils.FutureSyntax.FutureOps
 
 import java.time.{LocalDate, ZoneOffset}
 import scala.concurrent.Future
@@ -39,8 +41,9 @@ import scala.concurrent.Future
 class StoppedUsingServiceDateControllerSpec extends SpecBase with MockitoSugar {
 
   implicit val messages: Messages = stubMessages()
-  
+
   val formProvider = new StoppedUsingServiceDateFormProvider()
+
   private def form(currentDate: LocalDate = LocalDate.now(), registrationDate: LocalDate = LocalDate.now()): Form[LocalDate] =
     formProvider.apply(currentDate, registrationDate)
 
@@ -58,12 +61,19 @@ class StoppedUsingServiceDateControllerSpec extends SpecBase with MockitoSugar {
         "value.month" -> validAnswer.getMonthValue.toString,
         "value.year" -> validAnswer.getYear.toString
       )
+    
+    
+  val mockClientDetailsService: ClientDetailService = mock[ClientDetailService]
+  when(mockClientDetailsService.getClientName(any(), any())) thenReturn clientName.toFuture
 
   "StoppedUsingServiceDate Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, stoppedUsingServiceDateRoute)
@@ -74,7 +84,7 @@ class StoppedUsingServiceDateControllerSpec extends SpecBase with MockitoSugar {
         val dates = application.injector.instanceOf[Dates]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form(), waypoints, dates.dateHint)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form(), waypoints, dates.dateHint, clientName)(request, messages(application)).toString
       }
     }
 
@@ -82,7 +92,10 @@ class StoppedUsingServiceDateControllerSpec extends SpecBase with MockitoSugar {
 
       val userAnswers = UserAnswers(userAnswersId).set(StoppedUsingServiceDatePage, validAnswer).success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, stoppedUsingServiceDateRoute)
@@ -93,7 +106,7 @@ class StoppedUsingServiceDateControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form().fill(validAnswer), waypoints, dates.dateHint)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form().fill(validAnswer), waypoints, dates.dateHint, clientName)(request, messages(application)).toString
       }
     }
 
@@ -121,7 +134,10 @@ class StoppedUsingServiceDateControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request =
@@ -136,7 +152,7 @@ class StoppedUsingServiceDateControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints, dates.dateHint)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, dates.dateHint, clientName)(request, messages(application)).toString
       }
     }
 

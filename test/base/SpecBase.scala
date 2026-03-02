@@ -20,6 +20,7 @@ import controllers.actions.*
 import generators.Generators
 import models.UserAnswers
 import models.etmp.display.EtmpDisplayRegistration
+import org.mockito.Mockito.when
 import org.scalatest.concurrent.{IntegrationPatience, ScalaFutures}
 import org.scalatest.freespec.AnyFreeSpec
 import org.scalatest.matchers.must.Matchers
@@ -34,6 +35,7 @@ import play.api.mvc.AnyContentAsEmpty
 import play.api.test.CSRFTokenHelper.CSRFRequest
 import play.api.test.FakeRequest
 import queries.IossNumberQuery
+import services.ClientDetailService
 import uk.gov.hmrc.domain.Vrn
 
 import java.time.{Clock, Instant, LocalDate, ZoneId}

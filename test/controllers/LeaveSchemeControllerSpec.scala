@@ -29,6 +29,8 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.*
 import repositories.SessionRepository
 import views.html.LeaveSchemeView
+import services.ClientDetailService
+import utils.FutureSyntax.FutureOps
 
 import scala.concurrent.Future
 
@@ -38,12 +40,18 @@ class LeaveSchemeControllerSpec extends SpecBase with MockitoSugar {
   val form: Form[Boolean] = formProvider()
 
   lazy val leaveSchemeRoute: String = routes.LeaveSchemeController.onPageLoad(waypoints).url
+  
+  val mockClientDetailsService: ClientDetailService = mock[ClientDetailService]
+  when(mockClientDetailsService.getClientName(any(), any())) thenReturn clientName.toFuture
 
   "LeaveScheme Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, leaveSchemeRoute)
@@ -53,7 +61,7 @@ class LeaveSchemeControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[LeaveSchemeView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, clientName)(request, messages(application)).toString
       }
     }
 
@@ -61,7 +69,10 @@ class LeaveSchemeControllerSpec extends SpecBase with MockitoSugar {
 
       val userAnswers = UserAnswers(userAnswersId).set(LeaveSchemePage, true).success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(
+        bind[ClientDetailService].toInstance(mockClientDetailsService)
+      ).build()
 
       running(application) {
         val request = FakeRequest(GET, leaveSchemeRoute)
@@ -71,7 +82,7 @@ class LeaveSchemeControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(true), waypoints, clientName)(request, messages(application)).toString
       }
     }
 
@@ -102,7 +113,10 @@ class LeaveSchemeControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request =
@@ -116,7 +130,7 @@ class LeaveSchemeControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, clientName)(request, messages(application)).toString
       }
     }
 

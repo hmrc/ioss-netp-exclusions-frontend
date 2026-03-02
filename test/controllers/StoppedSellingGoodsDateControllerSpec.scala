@@ -20,14 +20,19 @@ import base.SpecBase
 import date.Dates
 import forms.StoppedSellingGoodsDateFormProvider
 import models.UserAnswers
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import pages.StoppedSellingGoodsDatePage
 import play.api.data.Form
 import play.api.i18n.Messages
+import play.api.inject.bind
 import play.api.mvc.{AnyContentAsEmpty, AnyContentAsFormUrlEncoded}
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.ClientDetailService
 import views.html.StoppedSellingGoodsDateView
+import utils.FutureSyntax.FutureOps
 
 import java.time.{LocalDate, ZoneOffset}
 
@@ -58,18 +63,25 @@ class StoppedSellingGoodsDateControllerSpec extends SpecBase with MockitoSugar {
     )
   }
 
-  def postRequest(payload: Map[String, String] = createPostPayload()): FakeRequest[AnyContentAsFormUrlEncoded] =
+  def postRequest(payload: Map[String, String] = createPostPayload()): FakeRequest[AnyContentAsFormUrlEncoded] = {
     FakeRequest(POST, stoppedSellingGoodsDateRoute)
       .withFormUrlEncodedBody(
         payload.toList: _*
       )
+  }
+  
+  val mockClientDetailsService: ClientDetailService = mock[ClientDetailService]
+  when(mockClientDetailsService.getClientName(any(), any())) thenReturn clientName.toFuture
 
 
   "StoppedSellingGoodsDate Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, stoppedSellingGoodsDateRoute)
@@ -80,7 +92,7 @@ class StoppedSellingGoodsDateControllerSpec extends SpecBase with MockitoSugar {
         val dates = application.injector.instanceOf[Dates]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form(), dates.dateHint, waypoints)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form(), dates.dateHint, waypoints, clientName)(request, messages(application)).toString
       }
     }
 
@@ -88,7 +100,10 @@ class StoppedSellingGoodsDateControllerSpec extends SpecBase with MockitoSugar {
 
       val userAnswers = UserAnswers(userAnswersId).set(StoppedSellingGoodsDatePage, validAnswer).success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, stoppedSellingGoodsDateRoute)
@@ -99,7 +114,7 @@ class StoppedSellingGoodsDateControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form().fill(validAnswer), dates.dateHint, waypoints)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form().fill(validAnswer), dates.dateHint, waypoints, clientName)(request, messages(application)).toString
       }
     }
 
@@ -121,7 +136,10 @@ class StoppedSellingGoodsDateControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request =
@@ -136,7 +154,7 @@ class StoppedSellingGoodsDateControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, dates.dateHint, waypoints)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, dates.dateHint, waypoints, clientName)(request, messages(application)).toString
       }
     }
 
