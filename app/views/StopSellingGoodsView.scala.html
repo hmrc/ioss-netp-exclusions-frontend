@@ -36,9 +36,10 @@
         }
 
         @govukRadios(
-            RadiosViewModel.yesNoDontKnow(
-                field = form("value"),
-                legend = LegendViewModel(messages("stopSellingGoods.heading", clientName)).asPageHeading()
+            RadiosViewModel(
+                field  = form("value"),
+                legend = LegendViewModel(messages("stopSellingGoods.heading", clientName)).asPageHeading(),
+                items  = YesNoDontKnow.options
             )
         )
 

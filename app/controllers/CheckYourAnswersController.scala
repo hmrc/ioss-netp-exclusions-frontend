@@ -23,7 +23,7 @@ import date.Dates
 import logging.Logging
 import models.audit.ExclusionAuditType
 import models.etmp.EtmpExclusionReason
-import models.{CheckMode, UserAnswers}
+import models.{CheckMode, UserAnswers, YesNoDontKnow}
 import pages.{CheckYourAnswersPage, EmptyWaypoints, LeaveSchemePage, StopSellingGoodsPage, Waypoint, Waypoints}
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
@@ -109,9 +109,9 @@ class CheckYourAnswersController @Inject()(
 
   private def determineExclusionReason(userAnswers: UserAnswers): EtmpExclusionReason = {
     userAnswers.get(StopSellingGoodsPage) match {
-      case Some(true) =>
+      case Some(YesNoDontKnow.Yes) =>
         EtmpExclusionReason.NoLongerSupplies
-      case Some(false) =>
+      case Some(value) if value == YesNoDontKnow.No || value == YesNoDontKnow.DontKnow =>
         userAnswers.get(LeaveSchemePage) match {
           case Some(true) =>
             EtmpExclusionReason.VoluntarilyLeaves

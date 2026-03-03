@@ -18,6 +18,7 @@ package controllers
 
 import controllers.actions.*
 import forms.StopSellingGoodsFormProvider
+import models.YesNoDontKnow
 import pages.{StopSellingGoodsPage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -39,7 +40,7 @@ class StopSellingGoodsController @Inject()(
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  val form: Form[Boolean] = formProvider()
+  val form: Form[YesNoDontKnow] = formProvider()
 
   def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
     implicit request =>

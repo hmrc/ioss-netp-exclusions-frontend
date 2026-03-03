@@ -17,14 +17,14 @@
 package forms
 
 import javax.inject.Inject
-
 import forms.mappings.Mappings
+import models.YesNoDontKnow
 import play.api.data.Form
 
 class StopSellingGoodsFormProvider @Inject() extends Mappings {
 
-  def apply(): Form[Boolean] =
+  def apply(): Form[YesNoDontKnow] =
     Form(
-      "value" -> boolean("stopSellingGoods.error.required")
+      "value" -> enumerable[YesNoDontKnow]("stopSellingGoods.error.required")
     )
 }

@@ -18,7 +18,8 @@ package controllers
 
 import base.SpecBase
 import forms.StopSellingGoodsFormProvider
-import models.UserAnswers
+import models.{UserAnswers, YesNoDontKnow}
+import models.YesNoDontKnow.Yes
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
@@ -34,7 +35,7 @@ import utils.FutureSyntax.FutureOps
 class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
 
   val formProvider = new StopSellingGoodsFormProvider()
-  val form: Form[Boolean] = formProvider()
+  val form: Form[YesNoDontKnow] = formProvider()
 
   lazy val stopSellingGoodsRoute: String = routes.StopSellingGoodsController.onPageLoad(waypoints).url
 
@@ -64,7 +65,7 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = UserAnswers(userAnswersId).set(StopSellingGoodsPage, true).success.value
+      val userAnswers = UserAnswers(userAnswersId).set(StopSellingGoodsPage, Yes).success.value
 
       val application = applicationBuilder(userAnswers = Some(userAnswers))
         .overrides(
@@ -79,7 +80,7 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints, clientName)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(Yes), waypoints, clientName)(request, messages(application)).toString
       }
     }
 
@@ -92,10 +93,10 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, stopSellingGoodsRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+            .withFormUrlEncodedBody(("value", "Yes"))
 
         val result = route(application, request).value
-        val userAnswers = UserAnswers(userAnswersId).set(StopSellingGoodsPage, true).success.value
+        val userAnswers = UserAnswers(userAnswersId).set(StopSellingGoodsPage, Yes).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual StopSellingGoodsPage.navigate(waypoints, emptyUserAnswers, userAnswers).url

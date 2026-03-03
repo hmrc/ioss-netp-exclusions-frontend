@@ -19,6 +19,7 @@ package controllers
 import config.FrontendAppConfig
 import controllers.actions.*
 import date.Dates
+import models.YesNoDontKnow
 import models.requests.DataRequest
 import pages.{StopSellingGoodsPage, StoppedSellingGoodsDatePage, StoppedUsingServiceDatePage}
 import play.api.i18n.{I18nSupport, MessagesApi}
@@ -44,8 +45,9 @@ class ApplicationCompleteController @Inject()(
   def onPageLoad: Action[AnyContent] = cc.identifyAndGetData.async {
     implicit request =>
       request.userAnswers.get(StopSellingGoodsPage) match {
-        case Some(true) => onStopSellingGoods()
-        case Some(false) => onStopUsingService()
+        case Some(YesNoDontKnow.Yes) => onStopSellingGoods()
+        case Some(YesNoDontKnow.No) => onStopUsingService()
+        case Some(YesNoDontKnow.DontKnow) => onStopUsingService()
         case None => Future.successful(Redirect(routes.JourneyRecoveryController.onPageLoad()))
       }
   }
