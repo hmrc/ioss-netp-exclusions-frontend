@@ -111,7 +111,7 @@ class CheckYourAnswersController @Inject()(
     userAnswers.get(StopSellingGoodsPage) match {
       case Some(YesNoDontKnow.Yes) =>
         EtmpExclusionReason.NoLongerSupplies
-      case Some(value) if value == YesNoDontKnow.No || value == YesNoDontKnow.DontKnow =>
+      case Some(_) =>
         userAnswers.get(LeaveSchemePage) match {
           case Some(true) =>
             EtmpExclusionReason.VoluntarilyLeaves

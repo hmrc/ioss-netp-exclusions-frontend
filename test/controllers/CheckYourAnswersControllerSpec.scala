@@ -100,7 +100,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
       "must include StopSellingGoodsSummary row in the summary list when data is present" in {
         val answersWithStopSellingGoods = answers
-          .set(StopSellingGoodsPage, No).success.value
+          .set(StopSellingGoodsPage, Yes).success.value
 
         val application = applicationBuilder(userAnswers = Some(answersWithStopSellingGoods))
           .overrides(bind[ClientDetailService].toInstance(mockClientDetailService))

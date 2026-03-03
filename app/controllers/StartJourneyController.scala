@@ -40,7 +40,6 @@ class StartJourneyController @Inject()(
     implicit request =>
 
       val originalAnswers = request.userAnswers.getOrElse(UserAnswers(request.userId))
-      println(s"\n\n Are there really still UA's? ${originalAnswers}")
       val updatedAnswersTry = originalAnswers.set(IossNumberQuery, iossNumber)
 
       updatedAnswersTry match {
