@@ -40,7 +40,7 @@ index.guidance = Welcome to your new frontend. Please see the README file for a 
 
 checkYourAnswers.title = Check your answers for {0} leaving the IOSS scheme
 checkYourAnswers.heading = Check your answers for {0} leaving the IOSS scheme
-checkYourAnswers.hint = I confirm my client wants to leave the IOSS scheme.
+checkYourAnswers.hint = I confirm I want to remove {0} from my account.
 
 journeyRecovery.continue.title = Sorry, there is a problem with the service
 journeyRecovery.continue.heading = Sorry, there is a problem with the service

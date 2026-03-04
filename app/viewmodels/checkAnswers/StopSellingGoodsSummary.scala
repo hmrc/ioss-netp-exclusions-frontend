@@ -16,8 +16,7 @@
 
 package viewmodels.checkAnswers
 
-import models.UserAnswers
-import models.YesNoDontKnow.Yes
+import models.{UserAnswers, YesNoDontKnow}
 import pages.{CheckAnswersPage, StopSellingGoodsPage, Waypoints}
 import play.api.i18n.Messages
 import uk.gov.hmrc.govukfrontend.views.viewmodels.summarylist.SummaryListRow
@@ -34,7 +33,10 @@ object StopSellingGoodsSummary  {
     answers.get(StopSellingGoodsPage).map {
       answer =>
 
-        val value = if (answer == Yes) "site.yes" else "site.no"
+        val value = answer match
+          case YesNoDontKnow.Yes => "site.yes"
+          case YesNoDontKnow.No => "site.no"
+          case YesNoDontKnow.DontKnow => "site.dontKnow"
 
         val stopSellingGoodsPageChangeUrl = StopSellingGoodsPage.changeLink(waypoints, sourcePage).url
         SummaryListRowViewModel(
