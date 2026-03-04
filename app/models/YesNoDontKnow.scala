@@ -26,7 +26,7 @@ object YesNoDontKnow extends Enumerable.Implicits {
 
   case object Yes extends WithName("Yes") with YesNoDontKnow
   case object No extends WithName("No") with YesNoDontKnow
-  case object DontKnow extends WithName("Don't Know") with YesNoDontKnow
+  case object DontKnow extends WithName("Don't know") with YesNoDontKnow
 
   val values: Seq[YesNoDontKnow] = Seq(
     Yes, No, DontKnow
