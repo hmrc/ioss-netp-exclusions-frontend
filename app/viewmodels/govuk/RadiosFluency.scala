@@ -87,45 +87,6 @@ trait RadiosFluency {
         items    = items
       ).inline()
     }
-    
-    def yesNoDontKnow(
-               field: Field,
-               legend: Legend
-             )(implicit messages: Messages): Radios =
-      yesNoDontKnow(
-        field    = field,
-        fieldset = FieldsetViewModel(legend)
-      )
-
-    def yesNoDontKnow(
-               field: Field,
-               fieldset: Fieldset
-             )(implicit messages: Messages): Radios = {
-
-      val items = Seq(
-        RadioItem(
-          id      = Some(field.id),
-          value   = Some("true"),
-          content = Text(messages("site.yes"))
-        ),
-        RadioItem(
-          id      = Some(s"${field.id}-no"),
-          value   = Some("false"),
-          content = Text(messages("site.no"))
-        ),
-        RadioItem(
-          id      = Some(s"${field.id}-dontKnow"),
-          value   = Some("false"),
-          content = Text(messages("site.dontKnow"))
-        )
-      )
-
-      apply(
-        field    = field,
-        fieldset = fieldset,
-        items    = items
-      )
-    }
   }
 
   implicit class FluentRadios(radios: Radios) {
