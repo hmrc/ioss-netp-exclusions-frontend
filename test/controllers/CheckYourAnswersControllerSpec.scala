@@ -21,6 +21,7 @@ import config.FrontendAppConfig
 import connectors.RegistrationConnector
 import date.{Dates, Today}
 import models.CheckMode
+import models.YesNoDontKnow.{No, Yes}
 import models.requests.DataRequest
 import org.mockito.ArgumentMatchers.any
 import org.mockito.Mockito.when
@@ -48,7 +49,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
   when(mockToday.date).thenReturn(today)
   private val date: Dates = new Dates(mockToday)
   private val answers = emptyUserAnswers
-    .set(StopSellingGoodsPage, true).success.value
+    .set(StopSellingGoodsPage, Yes).success.value
     .set(StoppedSellingGoodsDatePage, today).success.value
 
   private val mockRegistrationConnector: RegistrationConnector = mock[RegistrationConnector]
@@ -99,7 +100,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
       "must include StopSellingGoodsSummary row in the summary list when data is present" in {
         val answersWithStopSellingGoods = answers
-          .set(StopSellingGoodsPage, true).success.value
+          .set(StopSellingGoodsPage, Yes).success.value
 
         val application = applicationBuilder(userAnswers = Some(answersWithStopSellingGoods))
           .overrides(bind[ClientDetailService].toInstance(mockClientDetailService))
@@ -142,7 +143,7 @@ class CheckYourAnswersControllerSpec extends SpecBase with SummaryListFluency {
 
       "must include StopSellingGoodsSummary row with 'site.no' when StopSellingGoodsPage is false" in {
         val answersWithStopSellingGoodsNo = answers
-          .set(StopSellingGoodsPage, false).success.value
+          .set(StopSellingGoodsPage, No).success.value
           .set(LeaveSchemePage, true).success.value
           .set(StoppedUsingServiceDatePage, today).success.value
 

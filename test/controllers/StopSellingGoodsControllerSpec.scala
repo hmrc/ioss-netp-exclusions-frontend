@@ -18,26 +18,38 @@ package controllers
 
 import base.SpecBase
 import forms.StopSellingGoodsFormProvider
-import models.UserAnswers
+import models.{UserAnswers, YesNoDontKnow}
+import models.YesNoDontKnow.Yes
+import org.mockito.ArgumentMatchers.any
+import org.mockito.Mockito.when
 import org.scalatestplus.mockito.MockitoSugar
 import pages.StopSellingGoodsPage
 import play.api.data.Form
+import play.api.inject.bind
 import play.api.test.FakeRequest
 import play.api.test.Helpers.*
+import services.ClientDetailService
 import views.html.StopSellingGoodsView
+import utils.FutureSyntax.FutureOps
 
 class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
 
   val formProvider = new StopSellingGoodsFormProvider()
-  val form: Form[Boolean] = formProvider()
+  val form: Form[YesNoDontKnow] = formProvider()
 
   lazy val stopSellingGoodsRoute: String = routes.StopSellingGoodsController.onPageLoad(waypoints).url
+
+  val mockClientDetailsService: ClientDetailService = mock[ClientDetailService]
+  when(mockClientDetailsService.getClientName(any(), any())) thenReturn clientName.toFuture
 
   "StopSellingGoods Controller" - {
 
     "must return OK and the correct view for a GET" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, stopSellingGoodsRoute)
@@ -47,15 +59,18 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
         val view = application.injector.instanceOf[StopSellingGoodsView]
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form, waypoints)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form, waypoints, clientName)(request, messages(application)).toString
       }
     }
 
     "must populate the view correctly on a GET when the question has previously been answered" in {
 
-      val userAnswers = UserAnswers(userAnswersId).set(StopSellingGoodsPage, true).success.value
+      val userAnswers = UserAnswers(userAnswersId).set(StopSellingGoodsPage, Yes).success.value
 
-      val application = applicationBuilder(userAnswers = Some(userAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(userAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request = FakeRequest(GET, stopSellingGoodsRoute)
@@ -65,7 +80,7 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual OK
-        contentAsString(result) mustEqual view(form.fill(true), waypoints)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(form.fill(Yes), waypoints, clientName)(request, messages(application)).toString
       }
     }
 
@@ -78,10 +93,10 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
       running(application) {
         val request =
           FakeRequest(POST, stopSellingGoodsRoute)
-            .withFormUrlEncodedBody(("value", "true"))
+            .withFormUrlEncodedBody(("value", "Yes"))
 
         val result = route(application, request).value
-        val userAnswers = UserAnswers(userAnswersId).set(StopSellingGoodsPage, true).success.value
+        val userAnswers = UserAnswers(userAnswersId).set(StopSellingGoodsPage, Yes).success.value
 
         status(result) mustEqual SEE_OTHER
         redirectLocation(result).value mustEqual StopSellingGoodsPage.navigate(waypoints, emptyUserAnswers, userAnswers).url
@@ -90,7 +105,10 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
 
     "must return a Bad Request and errors when invalid data is submitted" in {
 
-      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers)).build()
+      val application = applicationBuilder(userAnswers = Some(emptyUserAnswers))
+        .overrides(
+          bind[ClientDetailService].toInstance(mockClientDetailsService)
+        ).build()
 
       running(application) {
         val request =
@@ -104,7 +122,7 @@ class StopSellingGoodsControllerSpec extends SpecBase with MockitoSugar {
         val result = route(application, request).value
 
         status(result) mustEqual BAD_REQUEST
-        contentAsString(result) mustEqual view(boundForm, waypoints)(request, messages(application)).toString
+        contentAsString(result) mustEqual view(boundForm, waypoints, clientName)(request, messages(application)).toString
       }
     }
   }

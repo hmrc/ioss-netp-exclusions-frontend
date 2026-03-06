@@ -25,9 +25,9 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], waypoints: Waypoints)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], waypoints: Waypoints, clientName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("leaveScheme.title"))) {
+@layout(pageTitle = title(form, messages("leaveScheme.title", clientName))) {
 
     @formHelper(action = routes.LeaveSchemeController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
@@ -38,7 +38,7 @@
         @govukRadios(
             RadiosViewModel.yesNo(
                 field = form("value"),
-                legend = LegendViewModel(messages("leaveScheme.heading")).asPageHeading()
+                legend = LegendViewModel(messages("leaveScheme.heading", clientName)).asPageHeading()
             )
         )
 

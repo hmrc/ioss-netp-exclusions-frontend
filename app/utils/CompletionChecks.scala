@@ -16,6 +16,7 @@
 
 package utils
 
+import models.YesNoDontKnow.Yes
 import models.requests.DataRequest
 import pages.*
 import play.api.mvc.Results.Redirect
@@ -32,7 +33,7 @@ trait CompletionChecks {
     request.userAnswers.get(StoppedUsingServiceDatePage).isDefined
 
   private def checkHasStoppedSellingGoodsJourney()(implicit request: DataRequest[AnyContent]): Boolean = {
-    val hasStoppedSellingGoods = request.userAnswers.get(StopSellingGoodsPage).contains(true)
+    val hasStoppedSellingGoods = request.userAnswers.get(StopSellingGoodsPage).contains(Yes)
     if (hasStoppedSellingGoods) hasStoppedSellingGoodsDateValid() else false
   }
 
@@ -60,7 +61,7 @@ trait CompletionChecks {
   }
 
   private def checkHasStoppedSellingGoods(waypoints: Waypoints)(implicit request: DataRequest[AnyContent]): Option[Result] = {
-    if (request.userAnswers.get(StopSellingGoodsPage).contains(true)) {
+    if (request.userAnswers.get(StopSellingGoodsPage).contains(Yes)) {
       incompleteStoppedSellingGoodsDateRedirect(waypoints)
     } else {
       None
@@ -68,7 +69,7 @@ trait CompletionChecks {
   }
 
   private def incompleteStoppedSellingGoodsDateRedirect(waypoints: Waypoints)(implicit request: DataRequest[AnyContent]): Option[Result] = {
-    if (request.userAnswers.get(StopSellingGoodsPage).contains(true)) {
+    if (request.userAnswers.get(StopSellingGoodsPage).contains(Yes)) {
       if (!hasStoppedSellingGoodsDateValid()) {
         Some(Redirect(controllers.routes.StoppedSellingGoodsDateController.onPageLoad(waypoints)))
       } else {
@@ -92,7 +93,7 @@ trait CompletionChecks {
   }
 
   private def noJourneyAnswered()(implicit request: DataRequest[AnyContent]): Option[Result] = {
-    if (request.userAnswers.get(StopSellingGoodsPage).contains(true)) {
+    if (request.userAnswers.get(StopSellingGoodsPage).contains(Yes)) {
       None
     } else {
       if (request.userAnswers.get(LeaveSchemePage).contains(true)) {

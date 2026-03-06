@@ -25,9 +25,9 @@
     button: ButtonGroup
 )
 
-@(form: Form[_], dateHint: String, waypoints: Waypoints)(implicit request: Request[_], messages: Messages)
+@(form: Form[_], dateHint: String, waypoints: Waypoints, clientName: String)(implicit request: Request[_], messages: Messages)
 
-@layout(pageTitle = title(form, messages("stoppedSellingGoodsDate.title"))) {
+@layout(pageTitle = title(form, messages("stoppedSellingGoodsDate.title", clientName))) {
 
     @formHelper(action = routes.StoppedSellingGoodsDateController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
@@ -38,7 +38,7 @@
         @govukDateInput(
             DateViewModel(
                 field = form("value"),
-                legend = LegendViewModel(messages("stoppedSellingGoodsDate.heading")).asPageHeading()
+                legend = LegendViewModel(messages("stoppedSellingGoodsDate.heading", clientName)).asPageHeading()
             )
             .withHint(HintViewModel(HtmlContent(messages("stoppedSellingGoodsDate.hint", dateHint))))
         )

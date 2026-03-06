@@ -23,8 +23,8 @@ import pages.{StoppedSellingGoodsDatePage, Waypoints}
 import play.api.data.Form
 import play.api.i18n.{I18nSupport, MessagesApi}
 import play.api.mvc.{Action, AnyContent, MessagesControllerComponents}
+import services.ClientDetailService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
-import utils.FutureSyntax.FutureOps
 import views.html.StoppedSellingGoodsDateView
 
 import java.time.LocalDate
@@ -36,12 +36,13 @@ class StoppedSellingGoodsDateController @Inject()(
                                                    cc: AuthenticatedControllerComponents,
                                                    dates: Dates,
                                                    formProvider: StoppedSellingGoodsDateFormProvider,
-                                                   view: StoppedSellingGoodsDateView
+                                                   view: StoppedSellingGoodsDateView,
+                                                   clientDetailService: ClientDetailService
                                                  )(implicit ec: ExecutionContext) extends FrontendBaseController with I18nSupport {
 
   protected val controllerComponents: MessagesControllerComponents = cc
 
-  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient {
+  def onPageLoad(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
     implicit request =>
 
       val commencementDate = LocalDate.parse("2025-06-03") //todo get schemeDetails from registrationConnector for commencement date when viewReg is implemented
@@ -52,7 +53,9 @@ class StoppedSellingGoodsDateController @Inject()(
         case Some(value) => form.fill(value)
       }
 
-      Ok(view(preparedForm, dates.dateHint, waypoints))
+      clientDetailService.getClientName.map { clientName =>
+        Ok(view(preparedForm, dates.dateHint, waypoints, clientName))
+      }
   }
 
   def onSubmit(waypoints: Waypoints): Action[AnyContent] = cc.identifyAndGetDataAndCheckIntermediaryClient.async {
@@ -64,8 +67,9 @@ class StoppedSellingGoodsDateController @Inject()(
 
       form.bindFromRequest().fold(
         formWithErrors =>
-          BadRequest(view(formWithErrors, dates.dateHint, waypoints)).toFuture,
-
+          clientDetailService.getClientName.map { clientName =>
+            BadRequest(view(formWithErrors, dates.dateHint, waypoints, clientName))
+          },
         value =>
           for {
             updatedAnswers <- Future.fromTry(request.userAnswers.set(StoppedSellingGoodsDatePage, value))

@@ -20,6 +20,7 @@ import base.SpecBase
 import config.FrontendAppConfig
 import connectors.RegistrationConnector
 import date.Today
+import models.YesNoDontKnow.{No, Yes}
 import models.requests.DataRequest
 import org.mockito.Mockito.when
 import pages.{LeaveSchemePage, StopSellingGoodsPage, StoppedSellingGoodsDatePage, StoppedUsingServiceDatePage}
@@ -58,7 +59,7 @@ class ApplicationCompleteControllerSpec extends SpecBase {
         val stoppedSellingGoodsDate = LocalDate.of(2024, 1, 16)
 
         val userAnswers = emptyUserAnswers
-          .set(StopSellingGoodsPage, true).success.get
+          .set(StopSellingGoodsPage, Yes).success.get
           .set(StoppedSellingGoodsDatePage, stoppedSellingGoodsDate).success.get
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
@@ -96,7 +97,7 @@ class ApplicationCompleteControllerSpec extends SpecBase {
         val stoppedSellingGoodsDate = LocalDate.of(2024, 1, 26)
 
         val userAnswers = emptyUserAnswers
-          .set(StopSellingGoodsPage, true).success.get
+          .set(StopSellingGoodsPage, Yes).success.get
           .set(StoppedSellingGoodsDatePage, stoppedSellingGoodsDate).success.get
 
         val application = applicationBuilder(userAnswers = Some(userAnswers))
@@ -137,7 +138,7 @@ class ApplicationCompleteControllerSpec extends SpecBase {
         val stoppedUsingServiceDate = LocalDate.of(2024, 1, 16)
 
         val userAnswers = emptyUserAnswers
-          .set(StopSellingGoodsPage, false).success.get
+          .set(StopSellingGoodsPage, No).success.get
           .set(LeaveSchemePage, true).success.get
           .set(StoppedUsingServiceDatePage, stoppedUsingServiceDate).success.get
 
@@ -175,7 +176,7 @@ class ApplicationCompleteControllerSpec extends SpecBase {
         val stoppedUsingServiceDate = LocalDate.of(2024, 1, 17)
 
         val userAnswers = emptyUserAnswers
-          .set(StopSellingGoodsPage, false).success.get
+          .set(StopSellingGoodsPage, No).success.get
           .set(LeaveSchemePage, true).success.get
           .set(StoppedUsingServiceDatePage, stoppedUsingServiceDate).success.get
 

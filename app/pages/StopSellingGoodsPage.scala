@@ -17,13 +17,13 @@
 package pages
 
 import controllers.routes
-import models.UserAnswers
+import models.{UserAnswers, YesNoDontKnow}
 import play.api.libs.json.JsPath
 import play.api.mvc.Call
 
 import scala.util.Try
 
-case object StopSellingGoodsPage extends QuestionPage[Boolean] {
+case object StopSellingGoodsPage extends QuestionPage[YesNoDontKnow] {
 
   override def path: JsPath = JsPath \ toString
 
@@ -34,17 +34,19 @@ case object StopSellingGoodsPage extends QuestionPage[Boolean] {
 
   override def nextPageNormalMode(waypoints: Waypoints, answers: UserAnswers): Page =
     answers.get(this).map {
-      case true => StoppedSellingGoodsDatePage
-      case false => LeaveSchemePage
+      case YesNoDontKnow.Yes => StoppedSellingGoodsDatePage
+      case YesNoDontKnow.No => LeaveSchemePage
+      case YesNoDontKnow.DontKnow => LeaveSchemePage
     }.orRecover
 
-  override def cleanup(value: Option[Boolean], userAnswers: UserAnswers): Try[UserAnswers] =
+  override def cleanup(value: Option[YesNoDontKnow], userAnswers: UserAnswers): Try[UserAnswers] =
     value match {
-      case Some(true) => for {
+      case Some(YesNoDontKnow.Yes) => for {
         leaveScheme <- userAnswers.remove(LeaveSchemePage)
         updatedAnswers <- leaveScheme.remove(StoppedUsingServiceDatePage)
       } yield updatedAnswers
-      case Some(false) => userAnswers.remove(StoppedSellingGoodsDatePage)
+      case Some(YesNoDontKnow.No) => userAnswers.remove(StoppedSellingGoodsDatePage)
+      case Some(YesNoDontKnow.DontKnow) => userAnswers.remove(StoppedSellingGoodsDatePage)
       case _ => super.cleanup(value, userAnswers)
     }
 }
