@@ -81,12 +81,14 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           status(result) mustEqual OK
           val maxChangeDate = "1 February 2024"
           val vatReturnDate = "January 2024"
+          val reregisterByDate = "29 February 2024"
 
           contentAsString(result) mustEqual view(
             config.iossYourAccountUrl,
             clientName,
             maxChangeDate,
-            vatReturnDate
+            vatReturnDate,
+            reregisterByDate
           )(request, messages(application)).toString
         }
       }
@@ -119,12 +121,14 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           status(result) mustEqual OK
           val maxChangeDate = "1 February 2024"
           val vatReturnDate = "January 2024"
+          val reregisterByDate = "29 February 2024"
 
           contentAsString(result) mustEqual view(
             config.iossYourAccountUrl,
             clientName,
             maxChangeDate,
-            vatReturnDate
+            vatReturnDate,
+            reregisterByDate
           )(request, messages(application)).toString
         }
       }
@@ -161,11 +165,14 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           status(result) mustEqual OK
           val maxChangeDate = "1 February 2024"
           val vatReturnDate = "January 2024"
+          val reregisterByDate = "29 February 2024"
+
           contentAsString(result) mustEqual view(
             config.iossYourAccountUrl,
             clientName,
             maxChangeDate,
-            vatReturnDate
+            vatReturnDate,
+            reregisterByDate
           )(request, messages(application)).toString
         }
       }
@@ -199,11 +206,14 @@ class ApplicationCompleteControllerSpec extends SpecBase {
           status(result) mustEqual OK
           val maxChangeDate = "1 March 2024"
           val vatReturnDate = "February 2024"
+          val reregisterByDate = "31 March 2024"
+
           contentAsString(result) mustEqual view(
             config.iossYourAccountUrl,
             clientName,
             maxChangeDate,
-            vatReturnDate
+            vatReturnDate,
+            reregisterByDate
           )(request, messages(application)).toString
         }
       }

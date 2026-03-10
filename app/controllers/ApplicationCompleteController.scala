@@ -28,6 +28,7 @@ import services.ClientDetailService
 import uk.gov.hmrc.play.bootstrap.frontend.controller.FrontendBaseController
 import views.html.ApplicationCompleteView
 
+import java.time.temporal.TemporalAdjusters.lastDayOfMonth
 import javax.inject.Inject
 import scala.concurrent.{ExecutionContext, Future}
 
@@ -60,12 +61,14 @@ class ApplicationCompleteController @Inject()(
       request.userAnswers.get(StoppedSellingGoodsDatePage).map { date =>
         val leaveDate = dates.getLeaveDateWhenStoppedSellingGoods
         val vatReturnDate = date
+        val reregisterByDate = leaveDate.`with`(lastDayOfMonth())
 
         Ok(view(
           config.iossYourAccountUrl,
           clientName,
           dates.formatter.format(leaveDate),
-          dates.monthFormatter.format(vatReturnDate)
+          dates.monthFormatter.format(vatReturnDate),
+          dates.formatter.format(reregisterByDate)
         ))
       }.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
     }
@@ -80,12 +83,14 @@ class ApplicationCompleteController @Inject()(
 
         val leaveDate = dates.getLeaveDateWhenStoppedUsingService(stoppedUsingServiceDate)
         val vatReturnDate = dates.getVatReturnMonthWhenStoppedUsingService(stoppedUsingServiceDate)
+        val reregisterByDate = leaveDate.`with`(lastDayOfMonth())
 
         Ok(view(
           config.iossYourAccountUrl,
           clientName,
           dates.formatter.format(leaveDate),
-          vatReturnDate
+          vatReturnDate,
+          dates.formatter.format(reregisterByDate)
         ))
       }.getOrElse(Redirect(routes.JourneyRecoveryController.onPageLoad()))
     }
