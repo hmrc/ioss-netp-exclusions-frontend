@@ -25,7 +25,8 @@
     yourAccountUrl: String,
     clientName: String,
     maxChangeDate: String,
-    vatReturnDate: String
+    vatReturnDate: String,
+    reregisteredByDate: String
 )(implicit request: Request[_], messages: Messages)
 
 @layout(pageTitle = titleNoForm(messages("applicationComplete.title", clientName))) {
@@ -47,6 +48,10 @@
         <li>@messages("applicationComplete.next.info.bullet1", vatReturnDate)</li>
         <li>@messages("applicationComplete.next.info.bullet2")</li>
     </ul>
+
+    <p class="govuk-body">
+        @Html(messages("applicationComplete.next.info.reregister", reregisteredByDate))
+    </p>
 
     <p class="govuk-body">
         @Html(messages("applicationComplete.next.info.bottom.p1", maxChangeDate))
