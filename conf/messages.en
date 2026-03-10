@@ -102,6 +102,7 @@ applicationComplete.next.info.bullet1 = complete their final, {0} VAT return
 applicationComplete.next.info.bullet2 = pay any VAT that you still owe on their account
 applicationComplete.next.info.bottom.p1= If you wish to undo this removal, you must contact <a class="govuk-link" href="mailto:vatoss.contact@hmrc.gov.uk">vatoss.contact@hmrc.gov.uk</a> by <strong>{0}</strong>
 applicationComplete.next.info.returnToAccount = Return to your account
+applicationComplete.next.info.reregister = Client Ltd will have until <strong>{0}</strong> to register with another IOSS service to ensure continuous use of the scheme.
 
 submissionFailure.title = We have a problem with our service right now
 submissionFailure.heading = We have not received your request to remove {0} from your account
