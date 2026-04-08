@@ -32,7 +32,12 @@
     @formHelper(action = routes.StopSellingGoodsController.onSubmit(waypoints), Symbol("autoComplete") -> "off") {
 
         @if(form.errors.nonEmpty) {
-            @govukErrorSummary(ErrorSummaryViewModel(form))
+            @govukErrorSummary(
+                ErrorSummaryViewModel(
+                    form,
+                    errorLinkOverrides = Map("value" -> "value_0")
+                )
+            )
         }
 
         @govukRadios(
