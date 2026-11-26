@@ -14,14 +14,15 @@
  * limitations under the License.
  *@
 
-@import views.html.components.ButtonGroupProcessing
+@import views.html.components.{ButtonGroupProcessing, PrintPage}
 
 @this(
     formHelper: FormWithCSRF,
     layout: templates.Layout,
     govukSummaryList: GovukSummaryList,
     govukWarningText: GovukWarningText,
-    button: ButtonGroupProcessing
+    button: ButtonGroupProcessing,
+    printPage: PrintPage
 )
 
 @(waypoints: Waypoints, list: SummaryList, isValid: Boolean, cancelLink: String, clientName: String)(implicit request: Request[_], messages: Messages)
@@ -36,6 +37,8 @@
     }
 
     <h1 class="govuk-heading-l">@messages("checkYourAnswers.heading", clientName)</h1>
+
+    @printPage()
 
     @govukSummaryList(list)
 

@@ -15,10 +15,12 @@
  *@
 
 @import viewmodels.InputWidth._
+@import views.html.components.PrintPage
 
 @this(
     layout: templates.Layout,
-    govukButton: GovukButton
+    govukButton: GovukButton,
+    printPage: PrintPage
 )
 
 @(
@@ -34,6 +36,8 @@
     <div class="govuk-panel govuk-panel--confirmation">
         <h1 class="govuk-panel__title">@messages("applicationComplete.heading", clientName)</h1>
     </div>
+
+    @printPage()
 
     <p class="govuk-body">
         @messages("applicationComplete.sentMessage")
